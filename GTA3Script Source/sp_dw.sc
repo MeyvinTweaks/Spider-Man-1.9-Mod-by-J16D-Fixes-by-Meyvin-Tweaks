@@ -36,7 +36,8 @@ WAIT 0
 WAIT 0
 LVAR_INT player_actor toggleSpiderMod isInMainMenu   //1:true 0: false
 LVAR_INT is_web_thrown iTempVar randomVal total_dmg
-LVAR_INT iChar sfx fx_web anim_seq fx_system iHitCounter
+LVAR_INT i iChar sfx fx_web anim_seq fx_system 
+LVAR_INT iFocus iHitCounter
 LVAR_FLOAT x[3] y[3] z[3] v1 v2 
 LVAR_FLOAT fCurrentTime zAngle xAngle fDistance
 
@@ -118,6 +119,32 @@ main_loop:
 
                     ENDIF
 
+                    //finisher (sp_fc.cs) - Focus Bar
+
+                    GET_CLEO_SHARED_VAR varUseFocus iFocus
+                    IF iFocus >= 15     
+                        GOSUB draw_finisher_indicator
+                        IF LOCATE_CHAR_DISTANCE_TO_COORDINATES player_actor (x[2] y[2] z[2]) 2.8
+
+                            IF IS_BUTTON_PRESSED PAD1 LEFTSHOULDER2         // ~k~~PED_CYCLE_WEAPON_LEFT~
+                            AND IS_BUTTON_PRESSED PAD1 TRIANGLE             // ~k~~VEHICLE_ENTER_EXIT~
+                            AND NOT IS_BUTTON_PRESSED PAD1 CIRCLE           // ~k~~PED_FIREWEAPON~
+                            AND NOT IS_BUTTON_PRESSED PAD1 LEFTSHOULDER1    //~k~~PED_ANSWER_PHONE~/ ~k~~PED_FIREWEAPON_ALT~
+                            AND NOT IS_BUTTON_PRESSED PAD1 RIGHTSHOULDER2        // ~k~~PED_CYCLE_WEAPON_RIGHT~/
+                                IF NOT IS_CHAR_REALLY_IN_AIR player_actor
+                                    IF GOSUB is_not_player_playing_anims
+                                        GOSUB process_finisher
+                                    ENDIF
+                                ENDIF
+
+                                WHILE IS_BUTTON_PRESSED PAD1 LEFTSHOULDER2         // ~k~~PED_CYCLE_WEAPON_LEFT~
+                                OR IS_BUTTON_PRESSED PAD1 TRIANGLE    // ~k~~VEHICLE_ENTER_EXIT~
+                                    WAIT 0
+                                ENDWHILE                            
+
+                            ENDIF
+                        ENDIF
+                    ENDIF
                 ENDIF
             ENDIF
         ELSE
@@ -141,6 +168,122 @@ main_loop:
     ENDIF
     WAIT 0
 GOTO main_loop  
+
+//-+-----Finisher GOSUB-+-------------------------
+draw_finisher_indicator:
+    IF CLEO_CALL get_target_char_from_char 0 player_actor 3.5 (iChar)
+        IF GOSUB is_not_char_playing_anims
+            CLEO_CALL getActorBonePos 0 iChar 3 (x[0] y[0] z[0])    //BONE_SPINE1
+            z[0] += 1.0
+            CONVERT_3D_TO_SCREEN_2D (x[0] y[0] z[0]) TRUE TRUE (v1 v2) (x[1] y[1])
+            GET_FIXED_XY_ASPECT_RATIO 36.0 36.0 (x[1] y[1])
+            GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS iChar 0.0 -0.75 0.15 (x[2] y[2] z[2])
+            IF LOCATE_CHAR_DISTANCE_TO_COORDINATES player_actor (x[2] y[2] z[2]) 3.5
+                IF GOSUB is_spider_hud_enabled
+                    IF IS_PC_USING_JOYPAD
+                        iTempVar = 600  //~k~~PED_CYCLE_WEAPON_LEFT~ + ~k~~VEHICLE_ENTER_EXIT~
+                        CLEO_CALL GUI_DrawHelperText 0 (v1 v2) (iTempVar 2) (0.0 0.0)   // gxtId(i)|Format(i)|LeftPadding(f)|TopPadding(f)
+                    ELSE
+                        iTempVar = 601  //~h~Q + ~h~F
+                        CLEO_CALL GUI_DrawHelperText 0 (v1 v2) (iTempVar 2) (0.0 0.0)   // gxtId(i)|Format(i)|LeftPadding(f)|TopPadding(f)
+                    ENDIF
+                ENDIF
+            ENDIF
+        ENDIF
+    ENDIF
+RETURN
+
+process_finisher:
+    IF GOSUB is_char_in_front_of_player
+        IF NOT IS_CHAR_SCRIPT_CONTROLLED iChar
+            IF CLEO_CALL is_char_gang_ped 0 iChar
+                MARK_CHAR_AS_NEEDED iChar
+            ENDIF
+        ENDIF
+        GOSUB set_z_angle_char
+        GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 1.25 0.0 (x[0] y[0] z[0])
+        SET_CHAR_COORDINATES_SIMPLE iChar x[0] y[0] z[0]    
+
+        GENERATE_RANDOM_INT_IN_RANGE 0 1 (randomVal)
+        //PRINT_FORMATTED_NOW "~y~Finisher Value: %i" 2000 randomVal
+        IF randomVal = 0
+            // Finisher 1
+            CLEAR_CHAR_TASKS player_actor 
+            CLEAR_CHAR_TASKS_IMMEDIATELY player_actor
+            TASK_PLAY_ANIM_NON_INTERRUPTABLE player_actor ("finish_1" "spider") 24.5 (0 1 1 0) -1
+            WAIT 0
+            SET_CHAR_ANIM_SPEED player_actor "finish_1" 1.25
+
+            GET_CLEO_SHARED_VAR varUseFocus iFocus
+            iFocus -= 15
+            SET_CLEO_SHARED_VAR varUseFocus iFocus
+
+            IF IS_CHAR_PLAYING_ANIM player_actor "finish_1"
+                WHILE IS_CHAR_PLAYING_ANIM player_actor "finish_1"
+                    ATTACH_CAMERA_TO_CHAR player_actor (2.5 -2.15 -0.5) (0.0 0.0 0.0) 0.0 2 
+                    GET_CHAR_ANIM_CURRENT_TIME player_actor "finish_1" (fCurrentTime)
+                    IF fCurrentTime >= 0.01    // frame 1/52
+                        IF NOT IS_CHAR_DEAD iChar
+                            CLEAR_CHAR_TASKS iChar
+                            CLEAR_CHAR_TASKS_IMMEDIATELY iChar                   
+                            iTempVar = 0
+                            WAIT 0
+                            GOSUB play_sfx_hit 
+                            TASK_DIE_NAMED_ANIM iChar ("finish_1_e" "spider") 4.5 -1 
+                            WAIT 0
+                            SET_CHAR_ANIM_SPEED iChar "finish_1" 1.25                         
+                        ENDIF
+                        //PRINT_FORMATTED_NOW "~y~Finisher Anim Playing..." 2000
+                        IF fCurrentTime >= 0.392    
+                        AND fCurrentTime <= 0.960
+                            CLEO_CALL draw_line_from_player_bone_to_char_bone 0 player_actor 25 iChar 2     //25:BONE_RIGHTHAND||35:BONE_LEFTHAND
+                            CLEO_CALL draw_line_from_player_bone_to_char_bone 0 player_actor 35 iChar 2     //35:BONE_LEFTHAND||25:BONE_RIGHTHAND                     
+                        ENDIF                        
+                        iTempVar = 1
+                        IF fCurrentTime >= 0.392
+                        AND fCurrentTime <= 0.402
+                            WAIT 0
+                            GOSUB playWebStrikeSfx
+                            iTempVar = 0                       
+                        ENDIF  
+                        iTempVar = 3
+                        IF fCurrentTime >= 0.758
+                            WAIT 0
+                            GOSUB playWebStrikeSfx
+                            iTempVar = 0      
+                            BREAK                 
+                        ENDIF                                                    
+                    ENDIF                                              
+                    WAIT 0
+                ENDWHILE
+                WAIT 350
+                RESTORE_CAMERA
+                RESTORE_CAMERA_JUMPCUT                
+            ENDIF
+        ELSE
+            //Finisher 2
+            //not added yet
+
+
+
+
+        ENDIF
+    ENDIF
+RETURN
+
+set_z_angle_char:
+    IF DOES_CHAR_EXIST iChar
+        GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor (0.0 0.0 0.0) (x[0] y[0] z[0])
+        GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS iChar (0.0 0.0 0.0) (x[1] y[1] z[1])
+        GET_ANGLE_FROM_TWO_COORDS (x[1] y[1]) (x[0] y[0]) (zAngle)
+        SET_CHAR_HEADING iChar zAngle
+        zAngle += 180.0
+        SET_CHAR_HEADING player_actor zAngle
+        zAngle -= 180.0
+    ENDIF
+RETURN
+
+//-+----------------------------------------------
 
 readVars:
     GET_CLEO_SHARED_VAR varStatusSpiderMod (toggleSpiderMod)
@@ -228,7 +371,7 @@ is_not_player_playing_anims:
                                 IF NOT IS_CHAR_PLAYING_ANIM player_actor ("webstrike_ground")
                                 AND NOT IS_CHAR_PLAYING_ANIM player_actor ("webstrike_air")
                                 AND NOT IS_CHAR_PLAYING_ANIM player_actor ("yank_object")
-
+                                AND NOT IS_CHAR_PLAYING_ANIM player_actor ("yank_weap")
                                     RETURN_TRUE
                                     RETURN
                                 ENDIF
@@ -243,6 +386,17 @@ is_not_player_playing_anims:
 
         ENDIF
 
+    ENDIF
+    RETURN_FALSE
+RETURN
+
+is_not_player_playing_finisher_anims:
+    IF NOT IS_CHAR_PLAYING_ANIM player_actor ("finish_1")
+    //AND NOT IS_CHAR_PLAYING_ANIM player_actor ("finish_2")
+    //AND NOT IS_CHAR_PLAYING_ANIM player_actor ("finish_3")
+    //AND NOT IS_CHAR_PLAYING_ANIM player_actor ("finish_4")
+        RETURN_TRUE
+        RETURN
     ENDIF
     RETURN_FALSE
 RETURN
@@ -1560,6 +1714,39 @@ assign_task_dodge_front_c:
     ENDIF
 RETURN
 
+is_char_in_front_of_player:
+    i = 0
+    WHILE GET_ANY_CHAR_NO_SAVE_RECURSIVE i (i iChar)
+        IF DOES_CHAR_EXIST iChar
+        AND NOT IS_CHAR_DEAD iChar
+        AND NOT IS_INT_LVAR_EQUAL_TO_INT_LVAR player_actor iChar
+            IF NOT IS_CHAR_IN_ANY_CAR iChar
+            AND NOT IS_CHAR_ON_ANY_BIKE iChar
+            AND NOT IS_CHAR_IN_ANY_POLICE_VEHICLE iChar
+                IF IS_CHAR_ON_SCREEN iChar 
+
+                    GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 1.0 0.25 (x[0] y[0] z[0])
+                    IF LOCATE_CHAR_ANY_MEANS_3D iChar x[0] y[0] z[0] 3.5 3.5 1.0 FALSE
+                        IF NOT IS_CHAR_PLAYING_ANY_SCRIPT_ANIMATION iChar INCLUDE_ANIMS_PRIMARY
+                            IF NOT IS_CHAR_FALLEN_ON_GROUND iChar
+                                //CLEAR_CHAR_PRIMARY_TASKS iChar
+                                //CLEAR_CHAR_SECONDARY_TASKS iChar
+                                CLEAR_CHAR_TASKS iChar
+                                CLEAR_CHAR_TASKS_IMMEDIATELY iChar
+                                //TASK_PLAY_ANIM_NON_INTERRUPTABLE iChar ("NULL" "NULL") 4.0 (1 1 1 1) -1
+                                RETURN_TRUE 
+                                RETURN
+                            ENDIF
+                        ENDIF
+                    ENDIF
+
+                ENDIF
+            ENDIF
+        ENDIF
+    ENDWHILE
+    RETURN_FALSE
+RETURN
+
 playWebStrikeSfx:
     SWITCH iTempVar
         CASE 1
@@ -1577,9 +1764,11 @@ playWebStrikeSfx:
             ELSE
                 ADD_ONE_OFF_SOUND 0.0 0.0 0.0 1130    //SOUND_PUNCH_PED 1130
             ENDIF
-            GET_CLEO_SHARED_VAR varHitCount iHitCounter
-            iHitCounter ++
-            SET_CLEO_SHARED_VAR varHitCount iHitCounter            
+            IF GOSUB is_not_player_playing_finisher_anims
+                GET_CLEO_SHARED_VAR varHitCount iHitCounter
+                iHitCounter ++
+                SET_CLEO_SHARED_VAR varHitCount iHitCounter     
+            ENDIF       
             BREAK
         CASE 3
             REMOVE_AUDIO_STREAM sfx
@@ -1589,9 +1778,11 @@ playWebStrikeSfx:
             ELSE
                 ADD_ONE_OFF_SOUND 0.0 0.0 0.0 1130    //SOUND_PUNCH_PED 1130
             ENDIF
-            GET_CLEO_SHARED_VAR varHitCount iHitCounter
-            iHitCounter ++
-            SET_CLEO_SHARED_VAR varHitCount iHitCounter            
+            IF GOSUB is_not_player_playing_finisher_anims
+                GET_CLEO_SHARED_VAR varHitCount iHitCounter
+                iHitCounter ++
+                SET_CLEO_SHARED_VAR varHitCount iHitCounter     
+            ENDIF            
             BREAK
     ENDSWITCH
     WAIT 0
