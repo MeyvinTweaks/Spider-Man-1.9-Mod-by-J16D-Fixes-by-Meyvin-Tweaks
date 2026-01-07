@@ -119,25 +119,24 @@ main_loop:
 
                     ENDIF
 
-                    //finisher (sp_fc.cs) - Focus Bar
-
+                    //Finisher (sp_fc.cs) - Focus Bar
                     GET_CLEO_SHARED_VAR varUseFocus iFocus
                     IF iFocus >= 15     
                         GOSUB draw_finisher_indicator
                         IF LOCATE_CHAR_DISTANCE_TO_COORDINATES player_actor (x[2] y[2] z[2]) 2.8
 
-                            IF IS_BUTTON_PRESSED PAD1 LEFTSHOULDER2         // ~k~~PED_CYCLE_WEAPON_LEFT~
+                            IF IS_BUTTON_PRESSED PAD1 CIRCLE                // ~k~~PED_FIREWEAPON~
                             AND IS_BUTTON_PRESSED PAD1 TRIANGLE             // ~k~~VEHICLE_ENTER_EXIT~
-                            AND NOT IS_BUTTON_PRESSED PAD1 CIRCLE           // ~k~~PED_FIREWEAPON~
                             AND NOT IS_BUTTON_PRESSED PAD1 LEFTSHOULDER1    //~k~~PED_ANSWER_PHONE~/ ~k~~PED_FIREWEAPON_ALT~
-                            AND NOT IS_BUTTON_PRESSED PAD1 RIGHTSHOULDER2        // ~k~~PED_CYCLE_WEAPON_RIGHT~/
+                            AND NOT IS_BUTTON_PRESSED PAD1 LEFTSHOULDER2    // ~k~~PED_CYCLE_WEAPON_LEFT~
+                            AND NOT IS_BUTTON_PRESSED PAD1 RIGHTSHOULDER2   // ~k~~PED_CYCLE_WEAPON_RIGHT~/
                                 IF NOT IS_CHAR_REALLY_IN_AIR player_actor
                                     IF GOSUB is_not_player_playing_anims
                                         GOSUB process_finisher
                                     ENDIF
                                 ENDIF
 
-                                WHILE IS_BUTTON_PRESSED PAD1 LEFTSHOULDER2         // ~k~~PED_CYCLE_WEAPON_LEFT~
+                                WHILE IS_BUTTON_PRESSED PAD1 CIRCLE        // ~k~~PED_FIREWEAPON~
                                 OR IS_BUTTON_PRESSED PAD1 TRIANGLE    // ~k~~VEHICLE_ENTER_EXIT~
                                     WAIT 0
                                 ENDWHILE                            
