@@ -421,6 +421,9 @@ J16D805 Assault
 J16D806 Mugging
 J16D808 Defeat The Thugs !
 
+SP600 ~k~~VEHICLE_ENTER_EXIT~ + ~k~~PED_FIREWEAPON~
+SP601 ~h~F + ~h~LMB
+
 SP650 ~k~~VEHICLE_ENTER_EXIT~ ~s~Web Backpack
 SP651 ~h~F ~s~Web Backpack
 SP652 ~k~~VEHICLE_ENTER_EXIT~
@@ -456,8 +459,6 @@ J16D814 Extra Time
 
 J16D815 Pizza Time !
 J16D816 Deliver The Pizza To Customers
-
-SCGXT 
 
 TEXT1 ~z~~b~~h~Customer:~w~ Thanks Spider-Man
 TEXT2 ~z~~b~~h~Customer:~w~ GRACIAS
