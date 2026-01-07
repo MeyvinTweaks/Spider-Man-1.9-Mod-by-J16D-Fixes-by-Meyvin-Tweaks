@@ -1,5 +1,5 @@
 // by J16D
-// Draw Indicator | Webstrike , Stealth & Disarm Enemies (yank weapons)
+// Draw Indicator | Webstrike , Stealth & Disarm Enemies | Finisher (Controlled by sp_fc.cs - Focus Bar Script)
 // Fixes by Meyvin Tweaks
 // Spider-Man Mod for GTA SA c.2018 - 2026
 // You need CLEO+: https://forum.mixmods.com.br/f141-gta3script-cleo/t5206-como-criar-scripts-com-cleo
