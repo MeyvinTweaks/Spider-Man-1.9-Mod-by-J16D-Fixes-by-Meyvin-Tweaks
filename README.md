@@ -26,6 +26,7 @@ Changelog :
 - Added Web Zip To Building (BETA)
 - Added Focus Bar
 - Added New Skill (Yank/Dissarm Enemies Weapons)
+- Added Finisher (Currently only one Finisher Move is available but planned to add more in future)
 - Script Improvements !
 - And MORE ....
 
