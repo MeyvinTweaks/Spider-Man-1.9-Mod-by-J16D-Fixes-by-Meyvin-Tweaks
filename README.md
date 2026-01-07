@@ -36,7 +36,7 @@ Changelog :
 Thanks To These People Who Helped Me A Lot !
 - J16D or jayd00 On GitHub (Coding)
 - The Rahijo (Retexturing)
-- Junior Djjr (Coding + Tips And Code Optimizations)
+- Junior Djjr (Coding + Optimizations)
 - Mr.Demon "Genos" Cyborg (Pizza Time Mission Source Code And Audio Collecting)
 - Krats18 (Normal Mapped Suits Rigged From The PS4 Game)
 - Aperture Gamer (Help To Make Additional Features On The Mod)
