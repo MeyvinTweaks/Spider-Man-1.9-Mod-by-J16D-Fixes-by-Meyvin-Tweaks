@@ -121,7 +121,7 @@ main_loop:
 
                     //Finisher (sp_fc.cs) - Focus Bar
                     GET_CLEO_SHARED_VAR varUseFocus iFocus
-                    IF iFocus >= 15     
+                    IF iFocus >= 0     //15
                         GOSUB draw_finisher_indicator
                         IF LOCATE_CHAR_DISTANCE_TO_COORDINATES player_actor (x[2] y[2] z[2]) 2.8
 
@@ -132,7 +132,9 @@ main_loop:
                             AND NOT IS_BUTTON_PRESSED PAD1 RIGHTSHOULDER2   // ~k~~PED_CYCLE_WEAPON_RIGHT~/
                                 IF NOT IS_CHAR_REALLY_IN_AIR player_actor
                                     IF GOSUB is_not_player_playing_anims
-                                        GOSUB process_finisher
+                                        IF DOES_CHAR_EXIST iChar
+                                            GOSUB process_finisher
+                                        ENDIF
                                     ENDIF
                                 ENDIF
 
@@ -212,6 +214,7 @@ process_finisher:
             TASK_PLAY_ANIM_NON_INTERRUPTABLE player_actor ("finish_1" "spider") 24.5 (0 1 1 0) -1
             WAIT 0
             SET_CHAR_ANIM_SPEED player_actor "finish_1" 1.25
+            SET_TIME_SCALE 0.75
 
             GET_CLEO_SHARED_VAR varUseFocus iFocus
             iFocus -= 15
@@ -221,38 +224,48 @@ process_finisher:
                 WHILE IS_CHAR_PLAYING_ANIM player_actor "finish_1"
                     ATTACH_CAMERA_TO_CHAR player_actor (2.5 -2.15 -0.5) (0.0 0.0 0.0) 0.0 2 
                     GET_CHAR_ANIM_CURRENT_TIME player_actor "finish_1" (fCurrentTime)
-                    IF fCurrentTime >= 0.01    // frame 1/52
+                    IF fCurrentTime >= 0.153    // frame 10/65
                         IF NOT IS_CHAR_DEAD iChar
                             CLEAR_CHAR_TASKS iChar
                             CLEAR_CHAR_TASKS_IMMEDIATELY iChar                   
                             iTempVar = 0
-                            WAIT 0
-                            GOSUB play_sfx_hit 
+                            GOSUB play_sfx_hit                      
+                        ENDIF
+                        IF fCurrentTime >= 0.138
                             TASK_DIE_NAMED_ANIM iChar ("finish_1_e" "spider") 4.5 -1 
                             WAIT 0
-                            SET_CHAR_ANIM_SPEED iChar "finish_1" 1.25                         
+                            SET_CHAR_ANIM_SPEED iChar "finish_1_e" 1.25   
+                            WAIT 0                        
+                            SET_TIME_SCALE 0.35                             
                         ENDIF
-                        //PRINT_FORMATTED_NOW "~y~Finisher Anim Playing..." 2000
+                        IF fCurrentTime >= 0.261
+                            SET_TIME_SCALE 1.0
+                        ENDIF
+
+                        iTempVar = 1
+                        IF fCurrentTime >= 0.523
+                        AND fCurrentTime <= 0.569
+                            GOSUB playWebStrikeSfx
+                            iTempVar = 0
+                        ENDIF
+
                         IF fCurrentTime >= 0.392    
-                        AND fCurrentTime <= 0.960
+                        AND fCurrentTime <= 0.960                    
                             CLEO_CALL draw_line_from_player_bone_to_char_bone 0 player_actor 25 iChar 2     //25:BONE_RIGHTHAND||35:BONE_LEFTHAND
                             CLEO_CALL draw_line_from_player_bone_to_char_bone 0 player_actor 35 iChar 2     //35:BONE_LEFTHAND||25:BONE_RIGHTHAND                     
-                        ENDIF                        
-                        iTempVar = 1
-                        IF fCurrentTime >= 0.392
-                        AND fCurrentTime <= 0.402
-                            WAIT 0
-                            GOSUB playWebStrikeSfx
-                            iTempVar = 0                       
-                        ENDIF  
+                        ENDIF
+
                         iTempVar = 3
                         IF fCurrentTime >= 0.758
                             WAIT 0
                             GOSUB playWebStrikeSfx
                             iTempVar = 0      
                             BREAK                 
-                        ENDIF                                                    
-                    ENDIF                                              
+                        ENDIF
+
+                        //PRINT_FORMATTED_NOW "~y~Finisher Anim Playing..." 2000                                                    
+                    ENDIF    
+
                     WAIT 0
                 ENDWHILE
                 WAIT 350
