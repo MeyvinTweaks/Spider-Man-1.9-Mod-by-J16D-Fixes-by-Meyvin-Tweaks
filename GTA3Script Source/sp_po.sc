@@ -136,6 +136,7 @@ main_loop:
                     AND IS_BUTTON_PRESSED PAD1 RIGHTSHOCK  // ~k~~PED_LOOKBEHIND~
 
                         IF CLEO_CALL is_power_ready 0 ()
+                        AND GOSUB is_not_player_playing_finisher_anims
                             GOSUB REQUEST_Animations
 
                             GOSUB get_power_max_time
@@ -2598,6 +2599,19 @@ REQUEST_Animations:
     ENDIF
     WAIT 0
 GOTO REQUEST_Animations
+
+//-+----------checks-+---------------
+is_not_player_playing_finisher_anims:
+    IF NOT IS_CHAR_PLAYING_ANIM player_actor ("finish_1")
+    //AND NOT IS_CHAR_PLAYING_ANIM player_actor ("finish_2")
+    //AND NOT IS_CHAR_PLAYING_ANIM player_actor ("finish_3")
+    //AND NOT IS_CHAR_PLAYING_ANIM player_actor ("finish_4")
+        RETURN_TRUE
+        RETURN
+    ENDIF
+    RETURN_FALSE
+RETURN
+
 }
 SCRIPT_END
 

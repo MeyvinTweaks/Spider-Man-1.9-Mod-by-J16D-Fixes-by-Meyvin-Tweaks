@@ -53,7 +53,7 @@ main_loop:
                     IF GOSUB does_skill_Perfect_Dodge_enabled
 
                         IF GOSUB is_not_char_playing_dodge_anims
-                        //IF NOT IS_CHAR_PLAYING_ANY_SCRIPT_ANIMATION player_actor INCLUDE_ANIMS_BOTH
+                        AND GOSUB is_not_player_playing_finisher_anims
                             i = 0
                             WHILE GET_ANY_CHAR_NO_SAVE_RECURSIVE i (i iChar)
                                 IF DOES_CHAR_EXIST iChar
@@ -233,6 +233,7 @@ RETURN
 //-+---------------------dodge-anim-------------------------
 assign_task_perfect_dodge_b:
     IF GOSUB is_not_char_playing_dodge_anims
+    AND GOSUB is_not_player_playing_finisher_anims
     //IF NOT IS_CHAR_PLAYING_ANY_SCRIPT_ANIMATION player_actor INCLUDE_ANIMS_PRIMARY
         GOSUB set_z_angle_player
         GENERATE_RANDOM_INT_IN_RANGE 0 5 (iTempVar)
@@ -438,6 +439,7 @@ RETURN
 assign_task_perfect_dodge:
     //IF NOT IS_CHAR_PLAYING_ANY_SCRIPT_ANIMATION player_actor INCLUDE_ANIMS_PRIMARY
     IF GOSUB is_not_char_playing_dodge_anims
+    AND GOSUB is_not_player_playing_finisher_anims
         IF GOSUB is_char_in_front_player
             GOSUB assign_task_dodge_front
         ELSE
@@ -747,6 +749,17 @@ is_not_char_playing_dodge_anims:
                 ENDIF
             ENDIF
         ENDIF
+    ENDIF
+    RETURN_FALSE
+RETURN
+
+is_not_player_playing_finisher_anims:
+    IF NOT IS_CHAR_PLAYING_ANIM player_actor ("finish_1")
+    //AND NOT IS_CHAR_PLAYING_ANIM player_actor ("finish_2")
+    //AND NOT IS_CHAR_PLAYING_ANIM player_actor ("finish_3")
+    //AND NOT IS_CHAR_PLAYING_ANIM player_actor ("finish_4")
+        RETURN_TRUE
+        RETURN
     ENDIF
     RETURN_FALSE
 RETURN
