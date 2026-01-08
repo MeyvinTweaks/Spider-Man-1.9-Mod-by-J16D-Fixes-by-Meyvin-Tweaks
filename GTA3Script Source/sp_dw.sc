@@ -121,7 +121,7 @@ main_loop:
 
                     //Finisher (sp_fc.cs) - Focus Bar
                     GET_CLEO_SHARED_VAR varUseFocus iFocus
-                    IF iFocus >= 0     //15
+                    IF iFocus >= 15     //15
                         GOSUB draw_finisher_indicator
                         IF LOCATE_CHAR_DISTANCE_TO_COORDINATES player_actor (x[2] y[2] z[2]) 2.8
 
@@ -172,13 +172,14 @@ GOTO main_loop
 
 //-+-----Finisher GOSUB-+-------------------------
 draw_finisher_indicator:
-    IF CLEO_CALL get_target_char_from_char 0 player_actor 3.5 (iChar)
+    //IF CLEO_CALL get_target_char_from_char 0 player_actor 3.5 (iChar)
+    IF GOSUB is_char_around_player 
         IF GOSUB is_not_char_playing_anims
             CLEO_CALL getActorBonePos 0 iChar 3 (x[0] y[0] z[0])    //BONE_SPINE1
             z[0] += 1.0
             CONVERT_3D_TO_SCREEN_2D (x[0] y[0] z[0]) TRUE TRUE (v1 v2) (x[1] y[1])
             GET_FIXED_XY_ASPECT_RATIO 36.0 36.0 (x[1] y[1])
-            GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS iChar 0.0 -0.75 0.15 (x[2] y[2] z[2])
+            GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS iChar 0.0 0.0 0.15 (x[2] y[2] z[2])
             IF LOCATE_CHAR_DISTANCE_TO_COORDINATES player_actor (x[2] y[2] z[2]) 3.5
                 IF GOSUB is_spider_hud_enabled
                     IF IS_PC_USING_JOYPAD
@@ -195,13 +196,16 @@ draw_finisher_indicator:
 RETURN
 
 process_finisher:
-    IF GOSUB is_char_in_front_of_player
-        IF NOT IS_CHAR_SCRIPT_CONTROLLED iChar
+    //IF GOSUB is_char_around_player 
+        IF IS_CHAR_SCRIPT_CONTROLLED iChar
             IF CLEO_CALL is_char_gang_ped 0 iChar
+                CLEAR_CHAR_TASKS iChar
+                CLEAR_CHAR_TASKS_IMMEDIATELY iChar        
+                WAIT 0          
                 MARK_CHAR_AS_NEEDED iChar
             ENDIF
         ENDIF
-        GOSUB set_z_angle_char
+        GOSUB set_z_angle_char       
         GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 1.25 0.0 (x[0] y[0] z[0])
         SET_CHAR_COORDINATES_SIMPLE iChar x[0] y[0] z[0]    
 
@@ -220,10 +224,11 @@ process_finisher:
             iFocus -= 15
             SET_CLEO_SHARED_VAR varUseFocus iFocus
 
-            IF IS_CHAR_PLAYING_ANIM player_actor "finish_1"
+            IF IS_CHAR_PLAYING_ANIM player_actor "finish_1" 
                 WHILE IS_CHAR_PLAYING_ANIM player_actor "finish_1"
+                    GOSUB set_z_angle_char
                     ATTACH_CAMERA_TO_CHAR player_actor (2.5 -2.15 -0.5) (0.0 0.0 0.0) 0.0 2 
-                    GET_CHAR_ANIM_CURRENT_TIME player_actor "finish_1" (fCurrentTime)
+                    GET_CHAR_ANIM_CURRENT_TIME player_actor "finish_1" (fCurrentTime)                     
                     IF fCurrentTime >= 0.153    // frame 10/65
                         IF NOT IS_CHAR_DEAD iChar
                             CLEAR_CHAR_TASKS iChar
@@ -280,7 +285,7 @@ process_finisher:
 
 
         ENDIF
-    ENDIF
+    //ENDIF
 RETURN
 
 set_z_angle_char:
@@ -1726,7 +1731,7 @@ assign_task_dodge_front_c:
     ENDIF
 RETURN
 
-is_char_in_front_of_player:
+is_char_around_player:
     i = 0
     WHILE GET_ANY_CHAR_NO_SAVE_RECURSIVE i (i iChar)
         IF DOES_CHAR_EXIST iChar
@@ -1735,16 +1740,16 @@ is_char_in_front_of_player:
             IF NOT IS_CHAR_IN_ANY_CAR iChar
             AND NOT IS_CHAR_ON_ANY_BIKE iChar
             AND NOT IS_CHAR_IN_ANY_POLICE_VEHICLE iChar
-                IF IS_CHAR_ON_SCREEN iChar 
+                //IF IS_CHAR_ON_SCREEN iChar 
 
-                    GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 1.0 0.25 (x[0] y[0] z[0])
-                    IF LOCATE_CHAR_ANY_MEANS_3D iChar x[0] y[0] z[0] 3.5 3.5 1.0 FALSE
+                    GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 0.25 (x[0] y[0] z[0])
+                    IF LOCATE_CHAR_ANY_MEANS_3D iChar x[0] y[0] z[0] 1.2 1.2 1.0 FALSE
                         IF NOT IS_CHAR_PLAYING_ANY_SCRIPT_ANIMATION iChar INCLUDE_ANIMS_PRIMARY
                             IF NOT IS_CHAR_FALLEN_ON_GROUND iChar
                                 //CLEAR_CHAR_PRIMARY_TASKS iChar
                                 //CLEAR_CHAR_SECONDARY_TASKS iChar
-                                CLEAR_CHAR_TASKS iChar
-                                CLEAR_CHAR_TASKS_IMMEDIATELY iChar
+                                //CLEAR_CHAR_TASKS iChar
+                                //CLEAR_CHAR_TASKS_IMMEDIATELY iChar
                                 //TASK_PLAY_ANIM_NON_INTERRUPTABLE iChar ("NULL" "NULL") 4.0 (1 1 1 1) -1
                                 RETURN_TRUE 
                                 RETURN
@@ -1752,7 +1757,7 @@ is_char_in_front_of_player:
                         ENDIF
                     ENDIF
 
-                ENDIF
+                //ENDIF
             ENDIF
         ENDIF
     ENDWHILE
