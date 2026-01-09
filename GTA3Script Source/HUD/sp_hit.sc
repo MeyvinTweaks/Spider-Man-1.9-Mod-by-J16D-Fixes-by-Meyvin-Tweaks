@@ -140,6 +140,7 @@ IF GET_CHAR_DAMAGE_LAST_FRAME eventArgVar (pEntity j j z)
             GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS iChar 0.0 0.0 0.0 (x y z)
             ADD_BLOOD x y z 0.0 0.0 0.0 150 iChar
             IF player_actor = iChar                             //  Fix The Pedestrians Hits Count 
+            AND NOT IS_CHAR_IN_WATER player_actor
                 iHitCounter ++             
                 SET_CLEO_SHARED_VAR varHitCount iHitCounter
             ENDIF
