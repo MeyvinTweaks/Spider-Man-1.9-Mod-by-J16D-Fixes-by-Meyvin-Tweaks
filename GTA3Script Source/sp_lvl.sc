@@ -32,6 +32,21 @@ LOAD_SPRITE tLevelUpIcon "lvli"
 
 iLevelUp = FALSE
 
+start_check:
+GOSUB readVars
+IF toggleSpiderMod = 0
+    WHILE toggleSpiderMod = 0
+        GOSUB readVars    
+        IF toggleSpiderMod = 1
+            IF isInMainMenu = 0  
+                WAIT 1000
+                BREAK
+            ENDIF
+        ENDIF
+        WAIT 0
+    ENDWHILE
+ENDIF
+
 main_loop:
     IF IS_PLAYER_PLAYING player 
         GOSUB readVars
@@ -203,10 +218,14 @@ main_loop:
             */
             
         ELSE
-            USE_TEXT_COMMANDS FALSE
-            REMOVE_TEXTURE_DICTIONARY
-            WAIT 50
-            TERMINATE_THIS_CUSTOM_SCRIPT
+            WAIT 1000
+            GOSUB readVars 
+            IF toggleSpiderMod = 0     
+                USE_TEXT_COMMANDS FALSE   
+                WAIT 50
+                //TERMINATE_THIS_CUSTOM_SCRIPT
+                GOTO start_check
+            ENDIF        
         ENDIF
     ENDIF
     WAIT 0
