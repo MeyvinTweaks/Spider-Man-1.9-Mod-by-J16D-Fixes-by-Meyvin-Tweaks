@@ -81,7 +81,7 @@ main_loop:
                         IF GOSUB get_building_side
                             GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 0.0 (x[1] y[1] z[1])
                             //IF z[0] >= z[1]   // fix for stuck player                        
-                                GOSUB draw_building_indicator
+                                
                                 //----------------------------------- Zip to Point
                                 // L2 + R2 
                                 IF IS_BUTTON_PRESSED PAD1 LEFTSHOULDER2         // ~k~~PED_CYCLE_WEAPON_LEFT~/ 
@@ -177,9 +177,10 @@ main_loop:
 GOTO main_loop 
 
 get_building_side:
-    CLEO_CALL getXYZAimCoords 0 player_actor 25.0 0.0 (x[0] y[0] z[0]) (x[2] y[2] z[2]) //(fDistance)
-    z[0] += 0.65
-    CLEO_CALL getXYZAimCoords 0 player_actor 25.0 1.0 (x[1] y[1] z[1]) (x[3] y[3] z[3]) //(fDistance)
+    CLEO_CALL getXYZAimCoords 0 player_actor 30.0 0.0 (x[0] y[0] z[0]) (x[1] y[1] z[1]) //(fDistance)
+    z[0] += 0.35
+    CLEO_CALL getXYZAimCoords 0 player_actor 30.0 1.0 (x[2] y[2] z[2]) (x[3] y[3] z[3]) //(fDistance)
+
     CLEO_CALL get_building_id 0 player_actor 25.0 0.0 (idModel)
     CLEO_CALL get_distance_between_coordinates 0 player_actor (x[0] y[0] z[0]) (fDistance) 
     CLEO_CALL idModelExist 0 (idModel)                                  //check if model available within range    
@@ -188,13 +189,22 @@ get_building_side:
     //DRAW_CORONA x[1] y[1] z[1] 0.40 CORONATYPE_SHINYSTAR FLARETYPE_NONE 0 0 255    
     //PRINT_FORMATTED_NOW "VectorN1 %.2f %.2f %.2f ~n~VectorN2 %.2f %.2f %.2f ~n~idModel :~y~ %i Distance : %.2f" 1000 x[2] y[2] z[2] x[3] y[3] z[3] idModel fDistance  //DEBUG 
 
-    IF NOT x[2] = x[3]
-    OR NOT y[2] = y[3]
+    IF NOT x[0] = x[2]
+    OR NOT y[0] = y[2]
+    OR NOT z[2] = z[3]
+        IF CLEO_CALL isClearInSightSphereRays 0 player_actor (x[0] y[0] z[0] x[0] y[0] z[0] x[2] y[2] z[2]) (0.0 0.0 3.0) (1 0 0 0 0)
+            //PRINT_FORMATTED_NOW "~y~ Collision Found" 1000 iTempVar
+            IF GOSUB is_sf_model_id_allowed
+                GOSUB draw_building_indicator
+                RETURN_TRUE
+                RETURN        
+            ENDIF
+        ENDIF   
+    ENDIF
+
     //OR NOT z[2] = z[3]
         
-        IF GOSUB is_sf_model_id_allowed
-
-            IF x[2] = 10.0         
+    /*        IF x[2] = 10.0         
                 IF x[3] = 10.0
                 OR x[3] = -10.0
                 OR y[3] = 10.0
@@ -281,11 +291,10 @@ get_building_side:
                     RETURN
                 ENDIF             
             ENDIF                      
-
-        ENDIF
-    ELSE    
-        RETURN_FALSE
-   ENDIF
+                 */
+        //ENDIF    
+    //ENDIF
+    RETURN_FALSE
 RETURN
 
 draw_building_indicator:
@@ -1433,12 +1442,105 @@ CLEO_RETURN 0
 }
 
 {
+//CLEO_CALL isClearInSight 0 player_actor (x_offset y_offset z_offset) (dx1 dy1 dz1 dx2 dy2 dz2) (0.0 0.0 -2.0) (/*solid*/ 1 /*car*/ 1 /*actor*/ 0 /*obj*/ 1 /*particle*/ 0)
+isClearInSightSphereRays:
+    LVAR_INT tempPlayer //In
+    LVAR_FLOAT x_offset y_offset z_offset dx1 dy1 dz1 dx2 dy2 dz2 //In
+    LVAR_FLOAT x y z
+    LVAR_INT isSolid isCar isActor isObject isParticle
+    LVAR_FLOAT xA yA zA xB yB zB 
+    //GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS tempPlayer x_offset y_offset z_offset (xA yA zA)
+
+    //DRAW_CORONA (x_offset y_offset z_offset) 0.60 CORONATYPE_SHINYSTAR FLARETYPE_NONE 255 0 0
+ 
+    x = x_offset + 3.15
+    y = y_offset + 3.15
+    z = z_offset 
+    //GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS tempPlayer x y z (xB yB zB)
+
+    //DRAW_CORONA (x y z) 0.60 CORONATYPE_SHINYSTAR FLARETYPE_NONE 0 255 0
+
+    IF IS_LINE_OF_SIGHT_CLEAR x y z x_offset y_offset z_offset (isSolid isCar isActor isObject isParticle)  
+
+        x = x_offset - 3.15
+        y = y_offset - 3.15
+        z = z_offset 
+        //GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS tempPlayer x y z (xB yB zB)
+
+        //DRAW_CORONA (x y z) 0.60 CORONATYPE_SHINYSTAR FLARETYPE_NONE 0 255 0
+
+        IF IS_LINE_OF_SIGHT_CLEAR x y z x_offset y_offset z_offset (isSolid isCar isActor isObject isParticle)  
+
+            x = x_offset + 3.15
+            y = y_offset - 3.15
+            z = z_offset 
+            //GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS tempPlayer x y z (xB yB zB)
+
+            //DRAW_CORONA (x y z) 0.60 CORONATYPE_SHINYSTAR FLARETYPE_NONE 0 255 0
+
+            IF IS_LINE_OF_SIGHT_CLEAR x y z x_offset y_offset z_offset (isSolid isCar isActor isObject isParticle)  
+
+                x = x_offset - 3.15
+                y = y_offset + 3.15
+                z = z_offset 
+                //GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS tempPlayer x y z (xB yB zB)
+
+                //DRAW_CORONA (x y z) 0.60 CORONATYPE_SHINYSTAR FLARETYPE_NONE 0 255 0
+
+                IF IS_LINE_OF_SIGHT_CLEAR x y z x_offset y_offset z_offset (isSolid isCar isActor isObject isParticle)  
+
+                    x = x_offset 
+                    y = y_offset 
+                    IF dz1 > dz2
+                        z = z_offset - 0.5
+                    ELSE
+                        IF dz1 <= dz2
+                            z = z_offset + 1.0
+                        ENDIF
+                    ENDIF
+                    //GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS tempPlayer x y z (xB yB zB)
+
+                    //DRAW_CORONA (x y z) 0.60 CORONATYPE_SHINYSTAR FLARETYPE_NONE 0 255 0
+
+                    IF IS_LINE_OF_SIGHT_CLEAR x y z x_offset y_offset z_offset (isSolid isCar isActor isObject isParticle)  
+
+                        RETURN_TRUE
+
+                    ELSE
+                        RETURN_FALSE
+                    ENDIF
+
+
+                ELSE
+                    RETURN_FALSE
+                ENDIF
+
+
+            ELSE
+                RETURN_FALSE
+            ENDIF
+
+
+        ELSE
+            RETURN_FALSE
+        ENDIF
+
+
+    ELSE
+        RETURN_FALSE
+    ENDIF
+
+
+CLEO_RETURN 0
+}
+
+{
 //CLEO_CALL getXYZAimCoords 0 scplayer fRange fZPoint (x y z) (x2 y2 z2) fVar
 getXYZAimCoords:
     LVAR_INT scplayer   //in
     LVAR_FLOAT range fZPoint  //in
     LVAR_FLOAT fromX fromY fromZ
-    LVAR_FLOAT camX camY camZ pointX pointY pointZ
+    LVAR_FLOAT camX camY camZ pointX pointY pointZ angleZ
     LVAR_INT var1 var2 i j k
     LVAR_FLOAT resultX resultY resultZ x y z
     LVAR_FLOAT x2 y2 z2 outputX outputY outputZ
@@ -1471,7 +1573,8 @@ getXYZAimCoords:
                 x *= 10.0
                 y *= 10.0
                 z *= 10.0
-                IF CLEO_CALL isClearInSight 0 scplayer (0.0 5.0 1.5) (1 0 0 0 0)    //Front
+                //IF CLEO_CALL isClearInSight 0 scplayer (0.0 5.0 1.5) (1 0 0 0 0)    //Front
+                IF CLEO_CALL isClearInSight 0 scplayer (10.0 20.5 5.5) (1 0 0 1 0)
                     CLEO_RETURN 0 resultX resultY resultZ x y z
                 ENDIF
             ENDIF             
