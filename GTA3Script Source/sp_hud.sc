@@ -121,22 +121,42 @@ main_loop:
                             SWITCH iTempVar // id:1 -16:9 | 2: -4:3 |3: - 16:10 |4: 5/4
                                 CASE 1  //16:9
                                     CLEO_CALL setRadarPostion 0 800.0 85.0 125.0 70.0   //Left|Top|Width|Height
+
+                                    GET_FIXED_XY_ASPECT_RATIO (151.0 155.0) (sx sy)
+                                    USE_TEXT_COMMANDS FALSE
+                                    DRAW_SPRITE idSRadar (569.0 397.0) (sx sy) (255 255 255 255)               //Radar HUD                         
                                     BREAK
                                 CASE 2  //4:3
                                     CLEO_CALL setRadarPostion 0 575.0 85.0 125.0 70.0   //Left|Top|Width|Height
+
+                                    GET_FIXED_XY_ASPECT_RATIO (151.0 155.0) (sx sy)
+                                    USE_TEXT_COMMANDS FALSE
+                                    DRAW_SPRITE idSRadar (561.3 397.0) (sx sy) (255 255 255 255)               //Radar HUD                     
                                     BREAK
                                 CASE 3  //16:10
                                     CLEO_CALL setRadarPostion 0 725.0 85.0 125.0 70.0   //Left|Top|Width|Height
+
+                                    GET_FIXED_XY_ASPECT_RATIO (151.0 155.0) (sx sy)
+                                    USE_TEXT_COMMANDS FALSE
+                                    DRAW_SPRITE idSRadar (577.5 397.0) (sx sy) (255 255 255 255)               //Radar HUD                            
                                     BREAK
                                 CASE 4  //5/4
                                     CLEO_CALL setRadarPostion 0 525.0 85.0 125.0 70.0   //Left|Top|Width|Height
+
+                                    GET_FIXED_XY_ASPECT_RATIO (152.0 155.0) (sx sy)
+                                    USE_TEXT_COMMANDS FALSE
+                                    DRAW_SPRITE idSRadar (552.0 397.0) (sx sy) (255 255 255 255)               //Radar HUD                       
                                     BREAK
                                 DEFAULT
                                     //This new line will make screens 1366x768 (16:8.9956076) compatible
                                     CLEO_CALL setRadarPostion 0 800.0 85.0 125.0 70.0   //Left|Top|Width|Height
-                                    //CLEO_CALL setRadarPostion 0 575.0 85.0 125.0 70.0   //Left|Top|Width|Height
+
+                                    GET_FIXED_XY_ASPECT_RATIO (150.0 155.0) (sx sy)
+                                    USE_TEXT_COMMANDS FALSE
+                                    DRAW_SPRITE idSRadar (569.0 397.0) (sx sy) (255 255 255 255)               //Radar HUD                       
                                     BREAK
                             ENDSWITCH
+                            //PRINT_FORMATTED_NOW "Aspect Ratio: %i" 1000 iTempVar
                         ELSE
                             CLEO_CALL setRadarPostion 0 40.0 104.0 94.0 76.0   //Left|Top|Width|Height  ||Default
                             DISPLAY_RADAR FALSE
@@ -171,7 +191,7 @@ main_loop:
                                 IF GOSUB are_wanted_stars_enabled
                                     GOSUB drawWantedStarDisplay
                                 ENDIF
-                                IF GOSUB is_any_hud_option_enabled
+                                IF GOSUB is_any_hud_option_enabled                            
                                     DISPLAY_HUD FALSE
                                 ELSE
                                     DISPLAY_HUD TRUE
@@ -423,9 +443,10 @@ RETURN
 loadHudTextures:
     IF DOES_DIRECTORY_EXIST "CLEO\SpiderJ16D"
         LOAD_TEXTURE_DICTIONARY sphud
-        //wanted star & background red
+        //Radar HUD
+        LOAD_SPRITE idSRadar "s_radar"
+        //Wanted star
         LOAD_SPRITE idStars "st1"
-        LOAD_SPRITE idHealthLow "splhealth"
         //Health bar
         LOAD_SPRITE idHBa "h_bar1"
         LOAD_SPRITE idHB "h_bar"
@@ -1381,7 +1402,9 @@ CONST_INT varFocusCount         70    //sp_hit    || focus bar
 CONST_INT varUseFocus           71    //sp_hit    || focus bar
 
 //TEXTURES
-CONST_INT idHealthLow 10
+//Radar HUD
+CONST_INT idSRadar 9
+//Wanted Stars
 CONST_INT idStars 11
 //Health bar
 CONST_INT idHB 15
