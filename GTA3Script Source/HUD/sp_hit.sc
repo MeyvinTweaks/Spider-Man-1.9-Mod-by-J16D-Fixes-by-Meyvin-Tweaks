@@ -1,8 +1,6 @@
 // by J16D and Meyvin Tweaks
-// Adapted by Meyvin Tweaks
-// Spider-Man Mod for GTA SA c.2018 - 2022
-// Hit Counter v2 - Events CLEO+
-// Still In Development Stage !
+// Spider-Man Mod for GTA SA c.2018 - 2026
+// Hit Counter - Events CLEO+
 // You need CLEO+: https://forum.mixmods.com.br/f141-gta3script-cleo/t5206-como-criar-scripts-com-cleo
 
 CONST_INT player 0
@@ -13,7 +11,7 @@ SCRIPT_START
 NOP
 SCRIPT_NAME sp_hit
 LVAR_INT player_actor toggleSpiderMod isInMainMenu toggleHUD hud_mode is_in_interior
-LVAR_INT iTempVar iTempVar2 counter is_hud_enabled is_opening_door
+LVAR_INT iTempVar iTempVar2 is_hud_enabled is_opening_door
 LVAR_FLOAT x y z sx sy
 LVAR_INT eventArgVar iChar iHitCounter iFocusHit iLastCount pEntity iEntityType j
 LVAR_INT flag_player_hit_counter
