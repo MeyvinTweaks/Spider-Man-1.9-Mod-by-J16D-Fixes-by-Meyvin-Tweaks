@@ -174,6 +174,39 @@ drawCompass:
             
                 //PRINT_FORMATTED_NOW "X %f Y %f Z%f drawX %f" 1000 cx cy cz drawX  
                 BREAK
+            CASE 2  //4:3
+                GET_LABEL_POINTER BufferMask128 i
+                WRITE_STRUCT_OFFSET i 0  4 0.0  // x top left corner  
+                WRITE_STRUCT_OFFSET i 4  4 338.0  // y top middle half 1
+                WRITE_STRUCT_OFFSET i 8  4 510.5  // x top right corner 
+                WRITE_STRUCT_OFFSET i 12 4 338.0  // y top middle half 2
+                WRITE_STRUCT_OFFSET i 16 4 0.0  // x bottom left corner 
+                WRITE_STRUCT_OFFSET i 20 4 365.0  // y bottom middle half 1
+                WRITE_STRUCT_OFFSET i 24 4 510.5  // x bottom right corner 
+                WRITE_STRUCT_OFFSET i 28 4 365.0  // y bottom middle half 2
+
+                GET_LABEL_POINTER BufferMaskB128 j
+                WRITE_STRUCT_OFFSET j 0  4 617.25  // x top left corner  
+                WRITE_STRUCT_OFFSET j 4  4 338.0  // y top middle half 1
+                WRITE_STRUCT_OFFSET j 8  4 700.0  // x top right corner 
+                WRITE_STRUCT_OFFSET j 12 4 338.0  // y top middle half 2
+                WRITE_STRUCT_OFFSET j 16 4 617.25  // x bottom left corner 
+                WRITE_STRUCT_OFFSET j 20 4 365.0  // y bottom middle half 1
+                WRITE_STRUCT_OFFSET j 24 4 700.0  // x bottom right corner 
+                WRITE_STRUCT_OFFSET j 28 4 365.0  // y bottom middle half 2
+
+                GET_ACTIVE_CAMERA_ROTATION cx cy cz
+
+
+                drawPosX = cz * 1.34
+                //drawPosX = cz
+                drawPosX += 238.0 // Center of screen
+
+                DRAW_TEXTURE_PLUS rwCompass DRAW_EVENT_AFTER_HUD (drawPosX 352.5) (900.0 25.0) 0.0 0.0 TRUE 4 i 255 255 255 255
+                DRAW_TEXTURE_PLUS 0 DRAW_EVENT_BEFORE_HUD (drawPosX 352.5) (900.0 25.0) 0.0 0.0 TRUE 4 j 255 255 255 0
+                //PRINT_FORMATTED_NOW "X %f Y %f Z%f drawX %f" 1000 cx cy cz drawX  
+                BREAK   
+
             DEFAULT
                 GET_LABEL_POINTER BufferMask128 i
                 WRITE_STRUCT_OFFSET i 0  4 0.0  // x top left corner  
@@ -206,13 +239,13 @@ drawCompass:
                 //PRINT_FORMATTED_NOW "X %f Y %f Z%f drawX %f" 1000 cx cy cz drawX  
                 BREAK            
         ENDSWITCH  
-        PRINT_FORMATTED_NOW "Aspect Ratio: %i" 1000 iTempVar 
+        //PRINT_FORMATTED_NOW "Aspect Ratio: %i" 1000 iTempVar 
     ENDIF
 RETURN
 
 loadCompassTexture:
-    LOAD_TEXTURE_DICTIONARY comp
-    LOAD_SPRITE dCompass "wne"
+    LOAD_TEXTURE_DICTIONARY sphud
+    LOAD_SPRITE dCompass "nesw"
     GET_TEXTURE_FROM_SPRITE dCompass rwCompass
 RETURN
 
