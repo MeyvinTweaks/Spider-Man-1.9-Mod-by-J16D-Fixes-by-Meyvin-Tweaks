@@ -57,6 +57,7 @@ is_hud_enabled = TRUE
 IF DOES_FILE_EXIST "CLEO\SpiderJ16D\HUD\sp_hl.cs" 
     STREAM_CUSTOM_SCRIPT "SpiderJ16D\HUD\sp_hl.cs"
 ENDIF
+
 IF DOES_FILE_EXIST "CLEO\SpiderJ16D\HUD\sp_hit.cs" 
     STREAM_CUSTOM_SCRIPT "SpiderJ16D\HUD\sp_hit.cs"    // Hit Counter Script (HUD Folder)
 ENDIF     
@@ -64,6 +65,10 @@ ENDIF
 IF DOES_FILE_EXIST "CLEO\SpiderJ16D\HUD\sp_fc.cs"
     STREAM_CUSTOM_SCRIPT "SpiderJ16D\HUD\sp_fc.cs"     // Focus Bar Script (HUD Folder)
 ENDIF      
+
+IF DOES_FILE_EXIST "CLEO\SpiderJ16D\HUD\sp_comp.cs" 
+    STREAM_CUSTOM_SCRIPT "SpiderJ16D\HUD\sp_comp.cs"
+ENDIF
 
 start_check:
 GOSUB readVars
