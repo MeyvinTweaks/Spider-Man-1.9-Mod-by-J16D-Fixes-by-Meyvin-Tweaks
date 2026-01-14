@@ -27,8 +27,10 @@ READ_FLOAT_FROM_INI_FILE "CLEO\SpiderJ16D\config.ini" "config" "setB" (fCurrentL
 CLEO_CALL unlock_spiderman_suits 0 iSavedLevel
 
 CONST_INT tLevelUpIcon 120
+CONST_INT tLevelUpBar 121
 LOAD_TEXTURE_DICTIONARY spmn
 LOAD_SPRITE tLevelUpIcon "lvli"
+LOAD_SPRITE tLevelUpBar "lvl_bar"
 
 iLevelUp = FALSE
 
@@ -78,7 +80,7 @@ main_loop:
                 // bar-Animation
                 timera = 0
                 WHILE iMaxTimeVarAnimation > timera
-                    fCurrentLevel +=@ 10.0
+                    fCurrentLevel +=@ 1.0
                     IF fCurrentLevel >= 1000.0
                         iLevelUp = TRUE
                         ++iSavedLevel
@@ -232,12 +234,17 @@ main_loop:
 GOTO main_loop
 
 draw_level_progress:
-    CLEO_CALL GUI_DrawBoxOutline_WithText 0 (263.75 55.0) (12.5 15.0) (57 110 132 210) (0.5) (1 1 1 1) (255 255 253 210) 123 5 0.0  // XP
-    CLEO_CALL GUI_DrawBox_WithNumber 0 (285.0 57.5) (30.0 10.0) (49 96 133 210) 122 6 0.0 isLvlup  //+~1~
+    CLEO_CALL GUI_DrawBoxOutline_WithText 0 (263.75 55.0) (0.0 0.0) (57 110 132 0) (0.0) (0 0 0 0) (0 0 0 0) 123 5 0.0  // XP
+    CLEO_CALL GUI_DrawBox_WithNumber 0 (285.0 57.5) (0.0 0.0) (49 96 133 0) 122 6 0.0 isLvlup  //+~1~
+
+    GET_FIXED_XY_ASPECT_RATIO (220.0 90.0) (sizeX[1] sizeY[1])
     CLEO_CALL barFunc 0 fCurrentLevel coordX[0] (sizeX[0] sizeY[0])
-    DRAW_RECT (320.0 50.0) (100.0 5.5) (7 202 190 100)              //sides
-    DRAW_RECT (320.0 50.0) (100.0 sizeY[0]) (49 96 133 210)         //blue background
-    DRAW_RECT (coordX[0] 50.0) (sizeX[0] sizeY[0]) (7 202 190 210)  //bar
+    USE_TEXT_COMMANDS FALSE
+    SET_SPRITES_DRAW_BEFORE_FADE TRUE    
+    DRAW_SPRITE tLevelUpBar (319.5 53.0) (sizeX[1] sizeY[1]) (255 255 255 255)   //icon
+    //DRAW_RECT (320.0 50.0) (100.0 5.5) (7 202 190 100)              //sides
+    //DRAW_RECT (320.0 50.0) (100.0 sizeY[0]) (49 96 133 210)         //blue background
+    DRAW_RECT (coordX[0] 48.95) (sizeX[0] sizeY[0]) (7 202 190 210)  //bar
     USE_TEXT_COMMANDS FALSE
 RETURN
  
@@ -306,12 +313,12 @@ barFunc:
     var[1] /= 1000.0 //fresX
     //var[1] *= 300.0
     //CLEO_CALL GetXYSizeInScreenScaleByUserResolution 0 (var[1] 12.0) (xSize ySize)  //var[1] = 100
-    var[1] *= 100.0
+    var[1] *= 100.5
     xSize = var[1]
-    ySize = 4.98
+    ySize = 3.8
     var[0] = xSize
     var[0] /= 2.0
-    var[0] += 270.0 //270+(100/2)= 320
+    var[0] += 269.75 //270+(100/2)= 320
 CLEO_RETURN 0 var[0] xSize ySize
 }
 {
