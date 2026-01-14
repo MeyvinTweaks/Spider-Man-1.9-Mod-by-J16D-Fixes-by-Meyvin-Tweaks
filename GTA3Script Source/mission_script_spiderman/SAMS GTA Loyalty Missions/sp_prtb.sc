@@ -98,9 +98,9 @@ SWITCH idVar
             GET_CLEO_SHARED_VAR varHudRadar (is_radar_enabled)
             IF is_radar_enabled = 1     // 0:OFF || 1:ON
                 px = 568.0
-                py = 330.0
+                py = 310.0
                 GOSUB draw_calls_cellphone
-                CLEO_CALL generate_anim_bars_speech 0 (533.0 330.0) (16 202 211 150)    //(46 117 156 150)
+                CLEO_CALL generate_anim_bars_speech 0 (533.0 310.0) (16 202 211 150)    //(46 117 156 150)
             ELSE
                 px = 60.0
                 py = 310.0
