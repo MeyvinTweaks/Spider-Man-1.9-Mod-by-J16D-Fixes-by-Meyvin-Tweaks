@@ -6,7 +6,7 @@
 // You need CLEO+: https://forum.mixmods.com.br/f141-gta3script-cleo/t5206-como-criar-scripts-com-cleo
 
 // Time To Start Jameson Interview
-CONST_INT time_start_interview 120000   //ms - 2 minutes   
+CONST_INT time_start_interview 600000   //ms - 10 minutes    120000
 
 // Jameson Interview Time Length
 CONST_INT time_interview_1 43500      //ms - JJJ_PInterview_1
@@ -76,9 +76,9 @@ main_loop:
                                 IF audio_line_is_active = 1
                                     IF is_radar_enabled = 1     // 0:OFF || 1:ON
                                         px = 568.0
-                                        py = 330.0
+                                        py = 310.0
                                         GOSUB draw_calls_cellphone
-                                        CLEO_CALL generate_anim_bars_speech 0 (533.0 330.0) (16 202 211 150)    //(46 117 156 150)
+                                        CLEO_CALL generate_anim_bars_speech 0 (533.0 310.0) (16 202 211 150)    //(46 117 156 150)
                                     ELSE
                                         px = 60.0
                                         py = 310.0           
@@ -262,7 +262,7 @@ WHILE TRUE
 
                         GENERATE_RANDOM_INT_IN_RANGE 0 2 iTempVar
                         //iTempVar = 1
-                        GOSUB play_sfx_call_inital  
+                        GOSUB play_sfx_call_initial  
 
                         GENERATE_RANDOM_INT_IN_RANGE 0 10 iTempVar3
                         WHILE TRUE
@@ -281,7 +281,7 @@ WHILE TRUE
                                             SET_CLEO_SHARED_VAR varAudioActive audio_line_is_active                                        
                                             REMOVE_AUDIO_STREAM sfx
                                             iTempVar = 2
-                                            GOSUB play_sfx_call_inital                         
+                                            GOSUB play_sfx_call_initial                         
                                             TERMINATE_THIS_CUSTOM_SCRIPT                                             
                                             BREAK 
                                         ENDIF
@@ -291,7 +291,7 @@ WHILE TRUE
                                             SET_CLEO_SHARED_VAR varAudioActive audio_line_is_active                                          
                                             REMOVE_AUDIO_STREAM sfx
                                             iTempVar = 2
-                                            GOSUB play_sfx_call_inital                                              
+                                            GOSUB play_sfx_call_initial                                              
                                             TERMINATE_THIS_CUSTOM_SCRIPT
                                             BREAK     
                                         ENDIF                                   
@@ -303,7 +303,7 @@ WHILE TRUE
                                             SET_CLEO_SHARED_VAR varAudioActive audio_line_is_active                                          
                                             REMOVE_AUDIO_STREAM sfx
                                             iTempVar = 2
-                                            GOSUB play_sfx_call_inital                                              
+                                            GOSUB play_sfx_call_initial                                              
                                             TERMINATE_THIS_CUSTOM_SCRIPT
                                             BREAK
                                         ENDIF
@@ -324,7 +324,7 @@ WHILE TRUE
                                             SET_CLEO_SHARED_VAR varAudioActive audio_line_is_active                                        
                                             REMOVE_AUDIO_STREAM sfx
                                             iTempVar = 2
-                                            GOSUB play_sfx_call_inital                         
+                                            GOSUB play_sfx_call_initial                         
                                             TERMINATE_THIS_CUSTOM_SCRIPT                                             
                                             BREAK 
                                         ENDIF
@@ -334,7 +334,7 @@ WHILE TRUE
                                             SET_CLEO_SHARED_VAR varAudioActive audio_line_is_active                                          
                                             REMOVE_AUDIO_STREAM sfx
                                             iTempVar = 2
-                                            GOSUB play_sfx_call_inital                                              
+                                            GOSUB play_sfx_call_initial                                              
                                             TERMINATE_THIS_CUSTOM_SCRIPT
                                             BREAK     
                                         ENDIF                                   
@@ -346,7 +346,7 @@ WHILE TRUE
                                             SET_CLEO_SHARED_VAR varAudioActive audio_line_is_active                                          
                                             REMOVE_AUDIO_STREAM sfx
                                             iTempVar = 2
-                                            GOSUB play_sfx_call_inital                                              
+                                            GOSUB play_sfx_call_initial                                              
                                             TERMINATE_THIS_CUSTOM_SCRIPT
                                             BREAK
                                         ENDIF
@@ -367,7 +367,7 @@ WHILE TRUE
                                             SET_CLEO_SHARED_VAR varAudioActive audio_line_is_active                                        
                                             REMOVE_AUDIO_STREAM sfx
                                             iTempVar = 2
-                                            GOSUB play_sfx_call_inital                         
+                                            GOSUB play_sfx_call_initial                         
                                             TERMINATE_THIS_CUSTOM_SCRIPT                                             
                                             BREAK 
                                         ENDIF
@@ -377,7 +377,7 @@ WHILE TRUE
                                             SET_CLEO_SHARED_VAR varAudioActive audio_line_is_active                                          
                                             REMOVE_AUDIO_STREAM sfx
                                             iTempVar = 2
-                                            GOSUB play_sfx_call_inital                                              
+                                            GOSUB play_sfx_call_initial                                              
                                             TERMINATE_THIS_CUSTOM_SCRIPT
                                             BREAK     
                                         ENDIF                                   
@@ -389,7 +389,7 @@ WHILE TRUE
                                             SET_CLEO_SHARED_VAR varAudioActive audio_line_is_active                                          
                                             REMOVE_AUDIO_STREAM sfx
                                             iTempVar = 2
-                                            GOSUB play_sfx_call_inital                                              
+                                            GOSUB play_sfx_call_initial                                              
                                             TERMINATE_THIS_CUSTOM_SCRIPT
                                             BREAK
                                         ENDIF
@@ -410,7 +410,7 @@ WHILE TRUE
                                             SET_CLEO_SHARED_VAR varAudioActive audio_line_is_active                                        
                                             REMOVE_AUDIO_STREAM sfx
                                             iTempVar = 2
-                                            GOSUB play_sfx_call_inital                         
+                                            GOSUB play_sfx_call_initial                         
                                             TERMINATE_THIS_CUSTOM_SCRIPT                                             
                                             BREAK 
                                         ENDIF
@@ -420,7 +420,7 @@ WHILE TRUE
                                             SET_CLEO_SHARED_VAR varAudioActive audio_line_is_active                                          
                                             REMOVE_AUDIO_STREAM sfx
                                             iTempVar = 2
-                                            GOSUB play_sfx_call_inital                                              
+                                            GOSUB play_sfx_call_initial                                              
                                             TERMINATE_THIS_CUSTOM_SCRIPT
                                             BREAK     
                                         ENDIF                                   
@@ -432,7 +432,7 @@ WHILE TRUE
                                             SET_CLEO_SHARED_VAR varAudioActive audio_line_is_active                                          
                                             REMOVE_AUDIO_STREAM sfx
                                             iTempVar = 2
-                                            GOSUB play_sfx_call_inital                                              
+                                            GOSUB play_sfx_call_initial                                              
                                             TERMINATE_THIS_CUSTOM_SCRIPT
                                             BREAK
                                         ENDIF
@@ -453,7 +453,7 @@ WHILE TRUE
                                             SET_CLEO_SHARED_VAR varAudioActive audio_line_is_active                                        
                                             REMOVE_AUDIO_STREAM sfx
                                             iTempVar = 2
-                                            GOSUB play_sfx_call_inital                         
+                                            GOSUB play_sfx_call_initial                         
                                             TERMINATE_THIS_CUSTOM_SCRIPT                                             
                                             BREAK 
                                         ENDIF
@@ -463,7 +463,7 @@ WHILE TRUE
                                             SET_CLEO_SHARED_VAR varAudioActive audio_line_is_active                                          
                                             REMOVE_AUDIO_STREAM sfx
                                             iTempVar = 2
-                                            GOSUB play_sfx_call_inital                                              
+                                            GOSUB play_sfx_call_initial                                              
                                             TERMINATE_THIS_CUSTOM_SCRIPT
                                             BREAK     
                                         ENDIF                                   
@@ -475,7 +475,7 @@ WHILE TRUE
                                             SET_CLEO_SHARED_VAR varAudioActive audio_line_is_active                                          
                                             REMOVE_AUDIO_STREAM sfx
                                             iTempVar = 2
-                                            GOSUB play_sfx_call_inital                                              
+                                            GOSUB play_sfx_call_initial                                              
                                             TERMINATE_THIS_CUSTOM_SCRIPT
                                             BREAK
                                         ENDIF
@@ -496,7 +496,7 @@ WHILE TRUE
                                             SET_CLEO_SHARED_VAR varAudioActive audio_line_is_active                                        
                                             REMOVE_AUDIO_STREAM sfx
                                             iTempVar = 2
-                                            GOSUB play_sfx_call_inital                         
+                                            GOSUB play_sfx_call_initial                         
                                             TERMINATE_THIS_CUSTOM_SCRIPT                                             
                                             BREAK 
                                         ENDIF
@@ -506,7 +506,7 @@ WHILE TRUE
                                             SET_CLEO_SHARED_VAR varAudioActive audio_line_is_active                                          
                                             REMOVE_AUDIO_STREAM sfx
                                             iTempVar = 2
-                                            GOSUB play_sfx_call_inital                                              
+                                            GOSUB play_sfx_call_initial                                              
                                             TERMINATE_THIS_CUSTOM_SCRIPT
                                             BREAK     
                                         ENDIF                                   
@@ -518,7 +518,7 @@ WHILE TRUE
                                             SET_CLEO_SHARED_VAR varAudioActive audio_line_is_active                                          
                                             REMOVE_AUDIO_STREAM sfx
                                             iTempVar = 2
-                                            GOSUB play_sfx_call_inital                                              
+                                            GOSUB play_sfx_call_initial                                              
                                             TERMINATE_THIS_CUSTOM_SCRIPT
                                             BREAK
                                         ENDIF
@@ -539,7 +539,7 @@ WHILE TRUE
                                             SET_CLEO_SHARED_VAR varAudioActive audio_line_is_active                                        
                                             REMOVE_AUDIO_STREAM sfx
                                             iTempVar = 2
-                                            GOSUB play_sfx_call_inital                         
+                                            GOSUB play_sfx_call_initial                         
                                             TERMINATE_THIS_CUSTOM_SCRIPT                                             
                                             BREAK 
                                         ENDIF
@@ -549,7 +549,7 @@ WHILE TRUE
                                             SET_CLEO_SHARED_VAR varAudioActive audio_line_is_active                                          
                                             REMOVE_AUDIO_STREAM sfx
                                             iTempVar = 2
-                                            GOSUB play_sfx_call_inital                                              
+                                            GOSUB play_sfx_call_initial                                              
                                             TERMINATE_THIS_CUSTOM_SCRIPT
                                             BREAK     
                                         ENDIF                                   
@@ -561,7 +561,7 @@ WHILE TRUE
                                             SET_CLEO_SHARED_VAR varAudioActive audio_line_is_active                                          
                                             REMOVE_AUDIO_STREAM sfx
                                             iTempVar = 2
-                                            GOSUB play_sfx_call_inital                                              
+                                            GOSUB play_sfx_call_initial                                              
                                             TERMINATE_THIS_CUSTOM_SCRIPT
                                             BREAK
                                         ENDIF
@@ -582,7 +582,7 @@ WHILE TRUE
                                             SET_CLEO_SHARED_VAR varAudioActive audio_line_is_active                                        
                                             REMOVE_AUDIO_STREAM sfx
                                             iTempVar = 2
-                                            GOSUB play_sfx_call_inital                         
+                                            GOSUB play_sfx_call_initial                         
                                             TERMINATE_THIS_CUSTOM_SCRIPT                                             
                                             BREAK 
                                         ENDIF
@@ -592,7 +592,7 @@ WHILE TRUE
                                             SET_CLEO_SHARED_VAR varAudioActive audio_line_is_active                                          
                                             REMOVE_AUDIO_STREAM sfx
                                             iTempVar = 2
-                                            GOSUB play_sfx_call_inital                                              
+                                            GOSUB play_sfx_call_initial                                              
                                             TERMINATE_THIS_CUSTOM_SCRIPT
                                             BREAK     
                                         ENDIF                                   
@@ -604,7 +604,7 @@ WHILE TRUE
                                             SET_CLEO_SHARED_VAR varAudioActive audio_line_is_active                                          
                                             REMOVE_AUDIO_STREAM sfx
                                             iTempVar = 2
-                                            GOSUB play_sfx_call_inital                                              
+                                            GOSUB play_sfx_call_initial                                              
                                             TERMINATE_THIS_CUSTOM_SCRIPT
                                             BREAK
                                         ENDIF
@@ -625,7 +625,7 @@ WHILE TRUE
                                             SET_CLEO_SHARED_VAR varAudioActive audio_line_is_active                                        
                                             REMOVE_AUDIO_STREAM sfx
                                             iTempVar = 2
-                                            GOSUB play_sfx_call_inital                         
+                                            GOSUB play_sfx_call_initial                         
                                             TERMINATE_THIS_CUSTOM_SCRIPT                                             
                                             BREAK 
                                         ENDIF
@@ -635,7 +635,7 @@ WHILE TRUE
                                             SET_CLEO_SHARED_VAR varAudioActive audio_line_is_active                                          
                                             REMOVE_AUDIO_STREAM sfx
                                             iTempVar = 2
-                                            GOSUB play_sfx_call_inital                                              
+                                            GOSUB play_sfx_call_initial                                              
                                             TERMINATE_THIS_CUSTOM_SCRIPT
                                             BREAK     
                                         ENDIF                                   
@@ -647,7 +647,7 @@ WHILE TRUE
                                             SET_CLEO_SHARED_VAR varAudioActive audio_line_is_active                                          
                                             REMOVE_AUDIO_STREAM sfx
                                             iTempVar = 2
-                                            GOSUB play_sfx_call_inital                                              
+                                            GOSUB play_sfx_call_initial                                              
                                             TERMINATE_THIS_CUSTOM_SCRIPT
                                             BREAK
                                         ENDIF
@@ -668,7 +668,7 @@ WHILE TRUE
                                             SET_CLEO_SHARED_VAR varAudioActive audio_line_is_active                                        
                                             REMOVE_AUDIO_STREAM sfx
                                             iTempVar = 2
-                                            GOSUB play_sfx_call_inital                         
+                                            GOSUB play_sfx_call_initial                         
                                             TERMINATE_THIS_CUSTOM_SCRIPT                                             
                                             BREAK 
                                         ENDIF
@@ -678,7 +678,7 @@ WHILE TRUE
                                             SET_CLEO_SHARED_VAR varAudioActive audio_line_is_active                                          
                                             REMOVE_AUDIO_STREAM sfx
                                             iTempVar = 2
-                                            GOSUB play_sfx_call_inital                                              
+                                            GOSUB play_sfx_call_initial                                              
                                             TERMINATE_THIS_CUSTOM_SCRIPT
                                             BREAK     
                                         ENDIF                                   
@@ -690,7 +690,7 @@ WHILE TRUE
                                             SET_CLEO_SHARED_VAR varAudioActive audio_line_is_active                                          
                                             REMOVE_AUDIO_STREAM sfx
                                             iTempVar = 2
-                                            GOSUB play_sfx_call_inital                                              
+                                            GOSUB play_sfx_call_initial                                              
                                             TERMINATE_THIS_CUSTOM_SCRIPT
                                             BREAK
                                         ENDIF
@@ -712,7 +712,7 @@ WHILE TRUE
     WAIT 0
 ENDWHILE  
 
-play_sfx_call_inital:
+play_sfx_call_initial:
     SWITCH iTempVar
 		CASE 0
             IF LOAD_AUDIO_STREAM "CLEO\SpiderJ16D\sfx\p_call.mp3" (sfx) 
