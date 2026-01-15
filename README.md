@@ -44,6 +44,7 @@ Thanks To These People Who Helped Me A Lot !
 - Mr.Andres5555 (Making Suits)
 - Billyyy (Animations)
 - WIGAME (Animations)
+- Hitman (Textures)
 - Zolani (Sounds)
 - Tamaputra (Sounds)
 
