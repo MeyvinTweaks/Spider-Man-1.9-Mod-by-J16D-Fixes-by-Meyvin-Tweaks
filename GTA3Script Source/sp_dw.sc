@@ -69,7 +69,13 @@ main_loop:
         IF toggleSpiderMod = 1 //TRUE
             IF isInMainMenu = 0     //1:true 0: false
                 SET_PLAYER_CYCLE_WEAPON_BUTTON player FALSE
-                SET_PLAYER_FIRE_BUTTON player FALSE            
+                SET_PLAYER_FIRE_BUTTON player FALSE       
+                GET_CLEO_SHARED_VAR varPlayerCanDrive (iTempVar)
+                IF iTempVar = 1
+                    SET_PLAYER_ENTER_CAR_BUTTON player TRUE
+                ELSE
+                    SET_PLAYER_ENTER_CAR_BUTTON player FALSE
+                ENDIF                     
                 IF GOSUB is_not_player_playing_anims
 
                     GOSUB draw_indicator_to_target_char
