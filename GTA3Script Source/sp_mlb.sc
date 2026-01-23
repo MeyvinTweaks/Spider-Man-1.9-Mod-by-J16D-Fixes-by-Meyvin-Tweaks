@@ -184,6 +184,7 @@ get_building_side:
     CLEO_CALL get_building_id 0 player_actor 25.0 0.0 (idModel)
     CLEO_CALL get_distance_between_coordinates 0 player_actor (x[0] y[0] z[0]) (fDistance) 
     CLEO_CALL idModelExist 0 (idModel)                                  //check if model available within range    
+    GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 0.0 (x[1] y[1] z[1])
 
     //DRAW_CORONA x[0] y[0] z[0] 0.40 CORONATYPE_SHINYSTAR FLARETYPE_NONE 255 0 0
     //DRAW_CORONA x[1] y[1] z[1] 0.40 CORONATYPE_SHINYSTAR FLARETYPE_NONE 0 0 255    
@@ -191,15 +192,28 @@ get_building_side:
 
     IF NOT x[0] = x[2]
     OR NOT y[0] = y[2]
-    OR NOT z[2] = z[3]
-        IF CLEO_CALL isClearInSightSphereRays 0 player_actor (x[0] y[0] z[0] x[0] y[0] z[0] x[2] y[2] z[2]) (0.0 0.0 3.0) (1 0 0 0 0)
-            //PRINT_FORMATTED_NOW "~y~ Collision Found" 1000 iTempVar
-            IF GOSUB is_sf_model_id_allowed
-                GOSUB draw_building_indicator
-                RETURN_TRUE
-                RETURN        
+    OR NOT z[0] = z[2]
+        IF z[0] >= z[1]   // fix for stuck player 
+            IF CLEO_CALL isClearInSightSphereRays 0 player_actor (x[0] y[0] z[0] x[0] y[0] z[0] x[2] y[2] z[2]) (0.0 0.0 3.0) (1 0 0 0 0)
+                //PRINT_FORMATTED_NOW "~y~ Collision Found" 1000 iTempVar
+                IF GOSUB is_sf_model_id_allowed
+                    GOSUB draw_building_indicator
+                    RETURN_TRUE
+                    RETURN        
+                ENDIF
+            ENDIF   
+        ELSE
+            IF z[0] < z[1]   // fix for stuck player 
+                IF CLEO_CALL isClearInSightGroundSphereRays 0 player_actor (x[0] y[0] z[0] x[0] y[0] z[0] x[2] y[2] z[2]) (0.0 0.0 3.0) (1 0 0 0 0)
+                    //PRINT_FORMATTED_NOW "~y~ Collision Found" 1000 iTempVar
+                    IF GOSUB is_sf_model_id_allowed
+                        GOSUB draw_building_indicator
+                        RETURN_TRUE
+                        RETURN        
+                    ENDIF
+                ENDIF 
             ENDIF
-        ENDIF   
+        ENDIF        
     ENDIF
 
     //OR NOT z[2] = z[3]
@@ -1491,16 +1505,114 @@ isClearInSightSphereRays:
 
                     x = x_offset 
                     y = y_offset 
-                    IF dz1 > dz2
-                        z = z_offset - 0.5
-                    ELSE
-                        IF dz1 <= dz2
-                            z = z_offset + 1.0
-                        ENDIF
-                    ENDIF
+                    z = z_offset + 1.0
+
                     //GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS tempPlayer x y z (xB yB zB)
 
                     //DRAW_CORONA (x y z) 0.60 CORONATYPE_SHINYSTAR FLARETYPE_NONE 0 255 0
+
+                    IF IS_LINE_OF_SIGHT_CLEAR x y z x_offset y_offset z_offset (isSolid isCar isActor isObject isParticle)  
+
+                        RETURN_TRUE
+
+                    ELSE
+                        RETURN_FALSE
+                    ENDIF
+
+
+                ELSE
+                    RETURN_FALSE
+                ENDIF
+
+
+            ELSE
+                RETURN_FALSE
+            ENDIF
+
+
+        ELSE
+            RETURN_FALSE
+        ENDIF
+
+
+    ELSE
+        RETURN_FALSE
+    ENDIF
+
+
+CLEO_RETURN 0
+}
+{
+//CLEO_CALL isClearInSight 0 player_actor (x_offset y_offset z_offset) (dx1 dy1 dz1 dx2 dy2 dz2) (0.0 0.0 -2.0) (/*solid*/ 1 /*car*/ 1 /*actor*/ 0 /*obj*/ 1 /*particle*/ 0)
+isClearInSightGroundSphereRays:
+    LVAR_INT tempPlayer //In
+    LVAR_FLOAT x_offset y_offset z_offset dx1 dy1 dz1 dx2 dy2 dz2 //In
+    LVAR_FLOAT x y z
+    LVAR_INT isSolid isCar isActor isObject isParticle
+    LVAR_FLOAT xA yA zA xB yB zB
+    LVAR_FLOAT dir1 dir2 dir3 
+    //GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS tempPlayer x_offset y_offset z_offset (xA yA zA)
+
+    //DRAW_CORONA (x_offset y_offset z_offset) 0.60 CORONATYPE_SHINYSTAR FLARETYPE_NONE 255 0 0
+ 
+    x = x_offset + 3.15
+    y = y_offset + 3.15
+    z = z_offset 
+    //GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS tempPlayer x y z (xB yB zB)
+
+    //DRAW_CORONA (x y z) 0.60 CORONATYPE_SHINYSTAR FLARETYPE_NONE 0 255 0
+
+    IF IS_LINE_OF_SIGHT_CLEAR x y z x_offset y_offset z_offset (isSolid isCar isActor isObject isParticle)  
+
+        x = x_offset - 3.15
+        y = y_offset - 3.15
+        z = z_offset 
+        //GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS tempPlayer x y z (xB yB zB)
+
+        //DRAW_CORONA (x y z) 0.60 CORONATYPE_SHINYSTAR FLARETYPE_NONE 0 255 0
+
+        IF IS_LINE_OF_SIGHT_CLEAR x y z x_offset y_offset z_offset (isSolid isCar isActor isObject isParticle)  
+
+            x = x_offset + 3.15
+            y = y_offset - 3.15
+            z = z_offset 
+            //GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS tempPlayer x y z (xB yB zB)
+
+            //DRAW_CORONA (x y z) 0.60 CORONATYPE_SHINYSTAR FLARETYPE_NONE 0 255 0
+
+            IF IS_LINE_OF_SIGHT_CLEAR x y z x_offset y_offset z_offset (isSolid isCar isActor isObject isParticle)  
+
+                x = x_offset - 3.15
+                y = y_offset + 3.15
+                z = z_offset 
+                //GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS tempPlayer x y z (xB yB zB)
+
+                //DRAW_CORONA (x y z) 0.60 CORONATYPE_SHINYSTAR FLARETYPE_NONE 0 255 0
+
+                IF IS_LINE_OF_SIGHT_CLEAR x y z x_offset y_offset z_offset (isSolid isCar isActor isObject isParticle)  
+
+                    GET_ACTIVE_CAMERA_ROTATION dir1 dir2 dir3
+                    x = x_offset 
+                    IF dir3 >= 45.0
+                    AND dir3 <= 135.0
+                        x = x_offset + 0.75
+                    ELSE
+                        x = x_offset - 0.75
+                    ENDIF                        
+                    y = y_offset
+                    IF dir3 >= 135.0
+                    AND dir3 <= 185.0
+                        y = y_offset - 0.75
+                    ELSE
+                        y = y_offset + 0.75
+                    ENDIF              
+                    //y = y_offset - 0.75
+                    z = z_offset - 0.5
+
+                    //GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS tempPlayer x y z (xB yB zB)
+
+                    //DRAW_CORONA (x y z) 0.60 CORONATYPE_SHINYSTAR FLARETYPE_NONE 0 255 0
+                    //PRINT_FORMATTED_NOW "Dir: ~y~%.2f %.2f %.2f" 2000 dir1 dir2 dir3
 
                     IF IS_LINE_OF_SIGHT_CLEAR x y z x_offset y_offset z_offset (isSolid isCar isActor isObject isParticle)  
 
