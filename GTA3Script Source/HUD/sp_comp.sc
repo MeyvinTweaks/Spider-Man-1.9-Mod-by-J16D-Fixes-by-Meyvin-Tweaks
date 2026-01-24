@@ -1,4 +1,4 @@
-// Meyvin Tweaks
+// by Meyvin Tweaks
 // Spider-Man Mod for GTA SA c.2018 - 2026
 // Compass HUD - Draw & Mask (CLEO+)
 // Still In Development Stage !
@@ -531,4 +531,5 @@ CONST_INT dCompass 1
 
 
     */ 
+
 
