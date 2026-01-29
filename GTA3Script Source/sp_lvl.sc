@@ -17,7 +17,7 @@ WAIT 0
 WAIT 0
 WAIT 0
 WAIT 0
-LVAR_INT toggleSpiderMod isInMainMenu isLvlup
+LVAR_INT player_actor toggleSpiderMod isInMainMenu isLvlup iTempVar iTempVar2
 LVAR_INT iSavedLevel iLevelUp iOldLevel iMaxTimeVarAnimation sfx
 LVAR_FLOAT fSavedLevel fReward fCurrentLevel fCopyCurrentLevel
 LVAR_FLOAT coordX[1] coordY[1] sizeX[2] sizeY[2]
@@ -26,12 +26,16 @@ READ_INT_FROM_INI_FILE "CLEO\SpiderJ16D\config.ini" "config" "setA" (iSavedLevel
 READ_FLOAT_FROM_INI_FILE "CLEO\SpiderJ16D\config.ini" "config" "setB" (fCurrentLevel)
 CLEO_CALL unlock_spiderman_suits 0 iSavedLevel
 
+CONST_INT idAirTDisp 9
 CONST_INT tLevelUpIcon 120
 CONST_INT tLevelUpBar 121
 LOAD_TEXTURE_DICTIONARY spmn
 LOAD_SPRITE tLevelUpIcon "lvli"
 LOAD_SPRITE tLevelUpBar "lvl_bar"
+LOAD_TEXTURE_DICTIONARY sptbx
+LOAD_SPRITE idAirTDisp "sp_airtdisp"
 
+GET_PLAYER_CHAR 0 player_actor
 iLevelUp = FALSE
 
 start_check:
@@ -79,8 +83,26 @@ main_loop:
                 isLvlup =# fReward
                 // bar-Animation
                 timera = 0
+                CLEO_CALL get_screen_aspect_ratio 0 (iTempVar)      
+                CLEO_CALL storeCurrentAspectRatio 0 (iTempVar)                  
                 WHILE iMaxTimeVarAnimation > timera
                     fCurrentLevel +=@ 1.0
+                    //-+---------------------------
+                    //Air Trick Displayer
+                    IF IS_CHAR_PLAYING_ANIM player_actor "fall_acrob_front"
+                        iTempVar = 0
+                    ELSE
+                        IF IS_CHAR_PLAYING_ANIM player_actor "fall_acrob_back"
+                            iTempVar = 1
+                        ELSE
+                            IF IS_CHAR_PLAYING_ANIM player_actor "fall_acrob_left"
+                            OR IS_CHAR_PLAYING_ANIM player_actor "fall_acrob_right"
+                                iTempVar = 2
+                            ENDIF
+                        ENDIF
+                    ENDIF                                        
+                    GOSUB drawAirTDisplay
+                    //-+----------------------------
                     IF fCurrentLevel >= 1000.0
                         iLevelUp = TRUE
                         ++iSavedLevel
@@ -234,18 +256,59 @@ main_loop:
 GOTO main_loop
 
 draw_level_progress:
-    CLEO_CALL GUI_DrawBoxOutline_WithText 0 (263.75 55.0) (0.0 0.0) (57 110 132 0) (0.0) (0 0 0 0) (0 0 0 0) 123 5 0.0  // XP
-    CLEO_CALL GUI_DrawBox_WithNumber 0 (285.0 57.5) (0.0 0.0) (49 96 133 0) 122 6 0.0 isLvlup  //+~1~
-
-    GET_FIXED_XY_ASPECT_RATIO (220.0 90.0) (sizeX[1] sizeY[1])
-    CLEO_CALL barFunc 0 fCurrentLevel coordX[0] (sizeX[0] sizeY[0])
-    USE_TEXT_COMMANDS FALSE
-    SET_SPRITES_DRAW_BEFORE_FADE TRUE    
-    DRAW_SPRITE tLevelUpBar (319.5 53.0) (sizeX[1] sizeY[1]) (255 255 255 255)   //icon
-    //DRAW_RECT (320.0 50.0) (100.0 5.5) (7 202 190 100)              //sides
-    //DRAW_RECT (320.0 50.0) (100.0 sizeY[0]) (49 96 133 210)         //blue background
-    DRAW_RECT (coordX[0] 48.95) (sizeX[0] sizeY[0]) (7 202 190 210)  //bar
-    USE_TEXT_COMMANDS FALSE
+    CLEO_CALL getCurrentAspectRatio 0 (iTempVar2)
+    GET_FIXED_XY_ASPECT_RATIO (220.0 90.0) (sizeX[1] sizeY[1])        
+    SWITCH iTempVar2 // id:1 -16:9 | 2: -4:3 |3: - 16:10 |4: 5/4
+        CASE 1  //16:9
+            CLEO_CALL GUI_DrawBoxOutline_WithText 0 (263.75 55.0) (0.0 0.0) (57 110 132 0) (0.0) (0 0 0 0) (0 0 0 0) 123 5 0.0  // XP
+            CLEO_CALL GUI_DrawBox_WithNumber 0 (285.0 57.5) (0.0 0.0) (49 96 133 0) 122 6 0.0 isLvlup  //+~1~        
+            CLEO_CALL barFunc 0 fCurrentLevel coordX[0] (sizeX[0] sizeY[0])
+            USE_TEXT_COMMANDS FALSE
+            SET_SPRITES_DRAW_BEFORE_FADE TRUE    
+            DRAW_SPRITE tLevelUpBar (319.5 53.0) (sizeX[1] sizeY[1]) (255 255 255 220)   //icon
+            DRAW_RECT (coordX[0] 48.75) (sizeX[0] sizeY[0]) (7 202 190 210)  //bar
+            USE_TEXT_COMMANDS FALSE                              
+            BREAK
+        CASE 2  //4:3
+            CLEO_CALL GUI_DrawBoxOutline_WithText 0 (261.75 55.0) (0.0 0.0) (57 110 132 0) (0.0) (0 0 0 0) (0 0 0 0) 123 5 0.0  // XP
+            CLEO_CALL GUI_DrawBox_WithNumber 0 (285.0 57.5) (0.0 0.0) (49 96 133 0) 122 6 0.0 isLvlup  //+~1~            
+            CLEO_CALL barFunc 0 fCurrentLevel coordX[0] (sizeX[0] sizeY[0])
+            USE_TEXT_COMMANDS FALSE
+            SET_SPRITES_DRAW_BEFORE_FADE TRUE    
+            DRAW_SPRITE tLevelUpBar (336.5 53.0) (sizeX[1] sizeY[1]) (255 255 255 220)   //icon
+            DRAW_RECT (coordX[0] 48.75) (sizeX[0] sizeY[0]) (7 202 190 210)  //bar               
+            BREAK
+        CASE 3  //16:10
+            CLEO_CALL GUI_DrawBoxOutline_WithText 0 (262.75 55.0) (0.0 0.0) (57 110 132 0) (0.0) (0 0 0 0) (0 0 0 0) 123 5 0.0  // XP
+            CLEO_CALL GUI_DrawBox_WithNumber 0 (285.0 57.5) (0.0 0.0) (49 96 133 0) 122 6 0.0 isLvlup  //+~1~                
+            CLEO_CALL barFunc 0 fCurrentLevel coordX[0] (sizeX[0] sizeY[0])
+            USE_TEXT_COMMANDS FALSE
+            SET_SPRITES_DRAW_BEFORE_FADE TRUE    
+            DRAW_SPRITE tLevelUpBar (325.0 53.0) (sizeX[1] sizeY[1]) (255 255 255 220)   //icon
+            DRAW_RECT (coordX[0] 48.75) (sizeX[0] sizeY[0]) (7 202 190 210)  //bar                     
+            BREAK
+        CASE 4  //5/4
+            CLEO_CALL GUI_DrawBoxOutline_WithText 0 (260.75 55.0) (0.0 0.0) (57 110 132 0) (0.0) (0 0 0 0) (0 0 0 0) 123 5 0.0  // XP
+            CLEO_CALL GUI_DrawBox_WithNumber 0 (285.0 57.5) (0.0 0.0) (49 96 133 0) 122 6 0.0 isLvlup  //+~1~                
+            CLEO_CALL barFunc 0 fCurrentLevel coordX[0] (sizeX[0] sizeY[0])
+            USE_TEXT_COMMANDS FALSE
+            SET_SPRITES_DRAW_BEFORE_FADE TRUE    
+            DRAW_SPRITE tLevelUpBar (340.5 53.0) (sizeX[1] sizeY[1]) (255 255 255 220)   //icon
+            DRAW_RECT (coordX[0] 48.75) (sizeX[0] sizeY[0]) (7 202 190 210)  //bar           
+            BREAK
+        DEFAULT
+            //This new line will make screens 1366x768 (16:8.9956076) compatible
+            CLEO_CALL GUI_DrawBoxOutline_WithText 0 (263.75 55.0) (0.0 0.0) (57 110 132 0) (0.0) (0 0 0 0) (0 0 0 0) 123 5 0.0  // XP
+            CLEO_CALL GUI_DrawBox_WithNumber 0 (285.0 57.5) (0.0 0.0) (49 96 133 0) 122 6 0.0 isLvlup  //+~1~        
+            CLEO_CALL barFunc 0 fCurrentLevel coordX[0] (sizeX[0] sizeY[0])
+            USE_TEXT_COMMANDS FALSE
+            SET_SPRITES_DRAW_BEFORE_FADE TRUE    
+            DRAW_SPRITE tLevelUpBar (319.5 53.0) (sizeX[1] sizeY[1]) (255 255 255 220)   //icon
+            DRAW_RECT (coordX[0] 48.75) (sizeX[0] sizeY[0]) (7 202 190 210)  //bar
+            USE_TEXT_COMMANDS FALSE           
+            BREAK
+    ENDSWITCH
+    //PRINT_FORMATTED_NOW "Aspect Ratio: %i" 1000 iTempVar2
 RETURN
  
 draw_level_up:
@@ -258,6 +321,28 @@ draw_level_up:
     USE_TEXT_COMMANDS FALSE
     SET_SPRITES_DRAW_BEFORE_FADE FALSE
     DRAW_SPRITE tLevelUpIcon (320.0 50.0) (sizeX[1] sizeY[1]) (255 255 255 200)
+RETURN
+
+drawAirTDisplay:
+// IN: {id} {trick_type} 0:Spider-Roll || 1:Moonsault || 2:Flying Helix 
+    USE_TEXT_COMMANDS FALSE
+    SET_SPRITES_DRAW_BEFORE_FADE TRUE
+    DRAW_SPRITE idAirTDisp (568.0 150.0) (120.0 100.0) (255 255 255 170)
+
+    SWITCH iTempVar
+        CASE 0
+            CLEO_CALL GUI_DrawBoxOutline_WithText 0 (575.0 151.5) (167.0 20.0) (255 255 255 0) (1.0) (0 0 0 0) (0 0 0 0) 26 16 0.0 // Spider-Roll
+            CLEO_CALL GUI_DrawBox_WithNumber 0 (611.0 152.5) (50.0 15.0) (49 96 133 0) 122 6 0.0 2  //+~1~
+            BREAK
+        CASE 1
+            CLEO_CALL GUI_DrawBoxOutline_WithText 0 (575.0 151.5) (167.0 20.0) (255 255 255 0) (1.0) (0 0 0 0) (0 0 0 0) 27 16 0.0 // Moonsault
+            CLEO_CALL GUI_DrawBox_WithNumber 0 (611.0 152.5) (50.0 15.0) (49 96 133 0) 122 6 0.0 4  //+~1~
+            BREAK
+        CASE 2
+            CLEO_CALL GUI_DrawBoxOutline_WithText 0 (575.0 151.5) (167.0 20.0) (255 255 255 0) (1.0) (0 0 0 0) (0 0 0 0) 28 16 0.0 // Flying Helix   
+            CLEO_CALL GUI_DrawBox_WithNumber 0 (611.0 152.5) (50.0 15.0) (49 96 133 0) 122 6 0.0 2  //+~1~
+            BREAK
+    ENDSWITCH
 RETURN
 
 readVars:
@@ -334,16 +419,6 @@ GetXYSizeInScreenScaleByUserResolution:
 CLEO_RETURN 0 (x y)
 }
 {
-//CLEO_CALL getCurrentResolution 0 (fX fY)
-getCurrentResolution:
-    LVAR_INT iresX iresY
-    LVAR_FLOAT fresX fresY
-    GET_CURRENT_RESOLUTION (iresX iresY)
-    fresX =# iresX
-    fresY =# iresY
-CLEO_RETURN 0 (fresX fresY)
-}
-{
 //CLEO_CALL getRewardsInfo 0 /*mission*/0 /*rewards*/ rew1 rew2 rew3
 getRewardsInfo:
     LVAR_INT counter    //In
@@ -386,7 +461,78 @@ setRewardsInfo:
 CLEO_RETURN 0
 }
 
-
+{
+//CLEO_CALL get_screen_aspect_ratio 0 var
+get_screen_aspect_ratio:
+    LVAR_FLOAT val[3] fResX fResY fAspectRatio
+    LVAR_INT id
+    CLEO_CALL getCurrentResolution 0 (fResX fResY)
+    fAspectRatio = fResX
+    fAspectRatio /= fResY
+    val[0] = 16.0
+    val[1] = 9.0
+    val[2] = val[0]
+    val[2] /= val[1]    //16:9
+    IF fAspectRatio = val[2]    //16:9
+        id = 1  // id:1 -16:9 | 2: -4:3 |3: - 16:10 |4: 5/4
+        CLEO_RETURN 0 id
+    ELSE
+        val[0] = 4.0
+        val[1] = 3.0
+        val[2] = val[0]
+        val[2] /= val[1]    //4:3
+        IF fAspectRatio = val[2]    //4:3
+            id = 2  // id:1 -16:9 | 2: -4:3 |3: - 16:10 |4: 5/4
+            CLEO_RETURN 0 id
+        ELSE
+            val[0] = 16.0
+            val[1] = 10.0
+            val[2] = val[0]
+            val[2] /= val[1]    //16:10
+            IF fAspectRatio = val[2]    //16:10
+                id = 3  // id:1 -16:9 | 2: -4:3 |3: - 16:10 |4: 5/4
+                CLEO_RETURN 0 id
+            ELSE
+                val[0] = 5.0
+                val[1] = 4.0
+                val[2] = val[0]
+                val[2] /= val[1]    //5:4
+                IF fAspectRatio = val[2]    //5:4
+                    id = 4  // id:1 -16:9 | 2: -4:3 |3: - 16:10 |4: 5/4
+                    CLEO_RETURN 0 id
+                ENDIF
+            ENDIF
+        ENDIF
+    ENDIF
+CLEO_RETURN 0 0
+}
+{
+//CLEO_CALL getCurrentResolution 0 (fX fY)
+getCurrentResolution:
+    LVAR_INT iresX iresY
+    LVAR_FLOAT fresX fresY
+    GET_CURRENT_RESOLUTION (iresX iresY)
+    fresX =# iresX
+    fresY =# iresY
+CLEO_RETURN 0 (fresX fresY)
+}
+{
+//CLEO_CALL storeCurrentAspectRatio 0 var
+storeCurrentAspectRatio:
+    LVAR_INT inVal
+    LVAR_INT pActiveItem
+    GET_LABEL_POINTER Screen_AspectRatio pActiveItem
+    WRITE_MEMORY pActiveItem 4 inVal FALSE
+CLEO_RETURN 0
+}
+{
+//CLEO_CALL getCurrentAspectRatio 0 (var)
+getCurrentAspectRatio:
+    LVAR_INT pActiveItem
+    GET_LABEL_POINTER Screen_AspectRatio (pActiveItem)
+    READ_MEMORY (pActiveItem) 4 FALSE (pActiveItem)  
+CLEO_RETURN 0 pActiveItem
+}
 
 //-+------------------------------IMGUI-EXTRA-------------------------------------
 // This code is outdated.
@@ -616,6 +762,10 @@ SWITCH iID
         GOSUB GUI_TextFormat_TextReward3_Colour
         fPadding = 4.5
         BREAK
+    CASE 16
+        GOSUB GUI_TextFormat_MediumMenu2
+        fPadding = 4.5
+        BREAK        
 ENDSWITCH
 CLEO_RETURN 0 fPadding
 
@@ -738,6 +888,13 @@ GUI_TextFormat_TextReward3_Colour:     //15    format rewards square indicator
     SET_TEXT_COLOUR 72 63 17 255
     SET_TEXT_EDGE 1 (0 0 0 0)
 RETURN
+GUI_TextFormat_MediumMenu2:          //16  format XP level text
+    SET_TEXT_FONT FONT_SUBTITLES
+    SET_TEXT_SCALE 0.21 1.015
+    SET_TEXT_WRAPX 640.0
+    SET_TEXT_COLOUR 255 255 255 255
+    SET_TEXT_EDGE 1 (0 0 0 0)
+RETURN
 }
 ///--------------------------------UNLOCK-----------------------------
 //READ_INT_FROM_INI_FILE "CLEO\SpiderJ16D\config.ini" "config" "setA" (iSavedLevel)
@@ -841,6 +998,11 @@ unlock_spiderman_suits:
     ENDIF
 CLEO_RETURN 0
 }
+
+Screen_AspectRatio:
+DUMP
+00000000    //id:1 - 16:9  | id:2 - 4:3
+ENDDUMP
 
 
 //-+---CONSTANTS--------------------
