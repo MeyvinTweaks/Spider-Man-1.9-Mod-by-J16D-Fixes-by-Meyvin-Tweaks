@@ -84,21 +84,22 @@ main_loop:
                 // bar-Animation
                 timera = 0
                 timerb = 0
-                CLEO_CALL get_screen_aspect_ratio 0 (iTempVar)      
-                CLEO_CALL storeCurrentAspectRatio 0 (iTempVar)                  
+                iTempVar = 0
+                CLEO_CALL get_screen_aspect_ratio 0 (iTempVar2)      
+                CLEO_CALL storeCurrentAspectRatio 0 (iTempVar2)                  
                 WHILE iMaxTimeVarAnimation > timera
                     fCurrentLevel +=@ 1.0
                     //-+---------------------------
                     //Air Trick Displayer
                     IF IS_CHAR_PLAYING_ANIM player_actor "fall_acrob_front"
-                        iTempVar = 0
+                        iTempVar = 1
                     ELSE
                         IF IS_CHAR_PLAYING_ANIM player_actor "fall_acrob_back"
-                            iTempVar = 1
+                            iTempVar = 2
                         ELSE
                             IF IS_CHAR_PLAYING_ANIM player_actor "fall_acrob_left"
                             OR IS_CHAR_PLAYING_ANIM player_actor "fall_acrob_right"
-                                iTempVar = 2
+                                iTempVar = 3
                             ENDIF
                         ENDIF
                     ENDIF                                        
@@ -126,6 +127,7 @@ main_loop:
                     ENDIF
                     WAIT 0
                 ENDWHILE
+                iTempVar = 0
                 CLAMP_INT iSavedLevel 1 52 (iSavedLevel)    // Max LVL 50
                 //CLEO_CALL limit_max_min_value_int 0 iSavedLevel 50 1 (iSavedLevel)   // Max LVL 50
                 WRITE_INT_TO_INI_FILE iSavedLevel "CLEO\SpiderJ16D\config.ini" "config" "setA"
@@ -329,22 +331,29 @@ RETURN
 
 drawAirTDisplay:
 // IN: {id} {trick_type} 0:Spider-Roll || 1:Moonsault || 2:Flying Helix 
-    USE_TEXT_COMMANDS FALSE
-    SET_SPRITES_DRAW_BEFORE_FADE TRUE
-    DRAW_SPRITE idAirTDisp (568.0 150.0) (120.0 100.0) (255 255 255 170)
-
     SWITCH iTempVar
-        CASE 0
+        CASE 1
+            USE_TEXT_COMMANDS FALSE
+            SET_SPRITES_DRAW_BEFORE_FADE TRUE
+            DRAW_SPRITE idAirTDisp (568.0 150.0) (120.0 100.0) (255 255 255 170)        
             CLEO_CALL GUI_DrawBoxOutline_WithText 0 (575.0 151.5) (167.0 20.0) (255 255 255 0) (1.0) (0 0 0 0) (0 0 0 0) 26 16 0.0 // Spider-Roll
             CLEO_CALL GUI_DrawBox_WithNumber 0 (611.0 152.5) (50.0 15.0) (49 96 133 0) 122 6 0.0 2  //+~1~
             BREAK
-        CASE 1
+        CASE 2
+            USE_TEXT_COMMANDS FALSE
+            SET_SPRITES_DRAW_BEFORE_FADE TRUE
+            DRAW_SPRITE idAirTDisp (568.0 150.0) (120.0 100.0) (255 255 255 170)        
             CLEO_CALL GUI_DrawBoxOutline_WithText 0 (575.0 151.5) (167.0 20.0) (255 255 255 0) (1.0) (0 0 0 0) (0 0 0 0) 27 16 0.0 // Moonsault
             CLEO_CALL GUI_DrawBox_WithNumber 0 (611.0 152.5) (50.0 15.0) (49 96 133 0) 122 6 0.0 4  //+~1~
             BREAK
-        CASE 2
+        CASE 3
+            USE_TEXT_COMMANDS FALSE
+            SET_SPRITES_DRAW_BEFORE_FADE TRUE
+            DRAW_SPRITE idAirTDisp (568.0 150.0) (120.0 100.0) (255 255 255 170)        
             CLEO_CALL GUI_DrawBoxOutline_WithText 0 (575.0 151.5) (167.0 20.0) (255 255 255 0) (1.0) (0 0 0 0) (0 0 0 0) 28 16 0.0 // Flying Helix   
             CLEO_CALL GUI_DrawBox_WithNumber 0 (611.0 152.5) (50.0 15.0) (49 96 133 0) 122 6 0.0 2  //+~1~
+            BREAK
+        DEFAULT
             BREAK
     ENDSWITCH
 RETURN
