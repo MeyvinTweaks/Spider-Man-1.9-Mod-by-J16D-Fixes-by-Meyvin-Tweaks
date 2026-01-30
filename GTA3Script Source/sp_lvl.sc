@@ -83,6 +83,7 @@ main_loop:
                 isLvlup =# fReward
                 // bar-Animation
                 timera = 0
+                timerb = 0
                 CLEO_CALL get_screen_aspect_ratio 0 (iTempVar)      
                 CLEO_CALL storeCurrentAspectRatio 0 (iTempVar)                  
                 WHILE iMaxTimeVarAnimation > timera
@@ -112,6 +113,9 @@ main_loop:
                     ENDIF
                     CLAMP_FLOAT fCurrentLevel 0.0 fCopyCurrentLevel (fCurrentLevel)
                     //CLEO_CALL max_min_value_float 0 fCurrentLevel fCopyCurrentLevel 0.0 (fCurrentLevel)
+                    IF 5 > timera
+                        GOSUB play_sfx_level_sound
+                    ENDIF
                     IF NOT IS_ON_SCRIPTED_CUTSCENE  // checks if the "widescreen" mode is active
                         GOSUB draw_level_progress
                     ENDIF
@@ -354,6 +358,13 @@ RETURN
 play_sfx_sound:
     IF DOES_FILE_EXIST "CLEO\SpiderJ16D\sfx\lvl_up.mp3"
         LOAD_AUDIO_STREAM "CLEO\SpiderJ16D\sfx\lvl_up.mp3" (sfx)
+        SET_AUDIO_STREAM_STATE sfx 1
+    ENDIF
+RETURN
+
+play_sfx_level_sound:
+    IF DOES_FILE_EXIST "CLEO\SpiderJ16D\sfx\lvl_xp_progress.mp3"
+        LOAD_AUDIO_STREAM "CLEO\SpiderJ16D\sfx\lvl_xp_progress.mp3" (sfx)
         SET_AUDIO_STREAM_STATE sfx 1
     ENDIF
 RETURN
