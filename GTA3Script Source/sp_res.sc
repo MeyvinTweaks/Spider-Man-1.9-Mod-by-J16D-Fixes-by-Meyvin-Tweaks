@@ -15,15 +15,16 @@ SCRIPT_NAME sp_res
 
 LVAR_INT player_actor baseObject iWebActor iWebActorR sfx
 LVAR_INT flag_photo_mode onmission toggleSpiderMod isInMainMenu
-LVAR_FLOAT x[2] y[2] z[2]
+LVAR_FLOAT x[2] y[2] z[2] rwAngle
 LVAR_FLOAT v1 v2 sizeX sizeY fCharSpeed currentTime zAngle fFov
-LVAR_INT randomVal iTower
+LVAR_INT randomVal iTower rwCross
 
 GET_PLAYER_CHAR 0 player_actor
 flag_photo_mode = 0     // 0:false||1:true  
 onmission = 0
 
 GOSUB loadTextures
+GET_TEXTURE_FROM_SPRITE objCrosshair rwCross
 WAIT 150
 
 /*
@@ -464,7 +465,12 @@ draw_indicator:
         IF IS_POINT_ON_SCREEN (x[1] y[1] z[1]) 0.5
             CONVERT_3D_TO_SCREEN_2D (x[1] y[1] z[1]) TRUE TRUE (v1 v2) (sizeX sizeY)
             GET_FIXED_XY_ASPECT_RATIO 40.0 40.0 (sizeX sizeY)
-            DRAW_SPRITE objCrosshair (v1 v2) (sizeX sizeY) (255 255 255 200)
+            //DRAW_SPRITE objCrosshair (v1 v2) (sizeX sizeY) (255 255 255 200)
+            rwAngle += 3.0
+            IF rwAngle >= 360.0
+                rwAngle = 0.0
+            ENDIF
+            DRAW_TEXTURE_PLUS rwCross DRAW_EVENT_BEFORE_HUD (v1 v2) (sizeX sizeY) rwAngle 0.0 FALSE -1 -1 (255 255 255 200)            
             USE_TEXT_COMMANDS FALSE
         ENDIF
     ENDIF

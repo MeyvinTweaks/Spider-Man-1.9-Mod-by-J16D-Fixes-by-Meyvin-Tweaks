@@ -328,7 +328,7 @@ CONST_INT varPowersProgress     35    //sp_po     || current power progress
 CONST_INT varHitCount           36    //sp_hit    || hitcounting
 CONST_INT varHitCountFlag       37    //sp_hit    || hitcounting  
 CONST_INT varReservoirInactive  38    //sp_res    || disable reservoirs 
-CONST_INT varIronArmsCondition  39    //sp_po    ||1= Activated     || 0= Deactivated
+CONST_INT varCrimeAlert         39  
 
 CONST_INT varInMenu             40    //1= On Menu       || 0= Menu Closed
 CONST_INT varMapLegendLandMark  43    //Show: 1= enable   || 0= disable

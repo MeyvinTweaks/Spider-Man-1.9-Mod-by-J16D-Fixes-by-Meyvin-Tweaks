@@ -18,9 +18,9 @@ WAIT 0
 WAIT 0
 WAIT 0
 LVAR_INT player_actor toggleSpiderMod
-LVAR_FLOAT xAngle zAngle x[4] y[4] z[4] v1 v2 fDistance currentTime fCharSpeed
+LVAR_FLOAT xAngle zAngle x[4] y[4] z[4] fDistance currentTime fCharSpeed rwAngle
 LVAR_INT baseObject baseObjectR iWebActor iWebActorR obj sfx sfxB
-LVAR_INT is_near_pole randomVal iTempVar is_near_car
+LVAR_INT is_near_pole randomVal iTempVar rwCross
 
 CONST_INT STOP 0 
 
@@ -28,6 +28,7 @@ GET_PLAYER_CHAR 0 player_actor
 GOSUB REQUEST_Animations
 GOSUB REQUEST_webAnimations
 GOSUB loadTextures
+GET_TEXTURE_FROM_SPRITE objCrosshair rwCross
 USE_TEXT_COMMANDS TRUE
 
 start_check:
@@ -148,8 +149,8 @@ main_loop:
                             iTempVar = 0
                             SET_CLEO_SHARED_VAR varBuildingZipFlag iTempVar
                         ENDIF                      
-                        is_near_car = 0
-                        SET_CLEO_SHARED_VAR varThrowFix (is_near_car)                    
+                        iTempVar = 0
+                        SET_CLEO_SHARED_VAR varThrowFix (iTempVar)                    
                     ENDIF
 
                 ELSE
@@ -317,11 +318,17 @@ RETURN
 
 draw_indicator_lamps:
     IF NOT IS_ON_SCRIPTED_CUTSCENE  // checks if the "widescreen" mode is active
-        CONVERT_3D_TO_SCREEN_2D (x[0] y[0] z[0]) TRUE TRUE (v1 v2) (x[3] y[3])
+        //CONVERT_3D_TO_SCREEN_2D (x[0] y[0] z[0]) TRUE TRUE (v1 v2) (x[3] y[3])
+        CONVERT_3D_TO_SCREEN_2D (x[0] y[0] z[0]) TRUE TRUE (x[0] y[0]) (x[3] y[3])
         GET_FIXED_XY_ASPECT_RATIO 30.0 30.0 (x[3] y[3])
         USE_TEXT_COMMANDS FALSE
         SET_SPRITES_DRAW_BEFORE_FADE TRUE
-        DRAW_SPRITE objCrosshair (v1 v2) (x[3] y[3]) (255 255 255 200)
+        //DRAW_SPRITE objCrosshair (v1 v2) (x[3] y[3]) (255 255 255 200)
+        rwAngle += 3.0
+        IF rwAngle >= 360.0
+            rwAngle = 0.0
+        ENDIF
+        DRAW_TEXTURE_PLUS rwCross DRAW_EVENT_BEFORE_HUD (x[0] y[0]) (x[3] y[3]) rwAngle 0.0 FALSE -1 -1 (255 255 255 200)
         IF GOSUB is_spider_hud_enabled
             GOSUB draw_tip_key_command
         ENDIF
