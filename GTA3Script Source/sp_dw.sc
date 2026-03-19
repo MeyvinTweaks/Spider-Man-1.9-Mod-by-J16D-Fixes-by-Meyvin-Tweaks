@@ -230,24 +230,81 @@ process_finisher:
             iFocus -= 15
             SET_CLEO_SHARED_VAR varUseFocus iFocus
 
-            IF IS_CHAR_PLAYING_ANIM player_actor "finish_1" 
-                WHILE IS_CHAR_PLAYING_ANIM player_actor "finish_1"
-                    GOSUB set_z_angle_char
-                    ATTACH_CAMERA_TO_CHAR player_actor (2.5 -2.15 -0.5) (0.0 0.0 0.0) 0.0 2 
-                    GET_CHAR_ANIM_CURRENT_TIME player_actor "finish_1" (fCurrentTime)                     
-                    IF fCurrentTime >= 0.153    // frame 10/65
-                        IF NOT IS_CHAR_DEAD iChar
-                            CLEAR_CHAR_TASKS iChar
-                            CLEAR_CHAR_TASKS_IMMEDIATELY iChar                   
+            IF NOT DOES_FILE_EXIST "modloader/Ragdoll Bullet Physics\Ragdoll_Physics.asi"   //fix bug if Ragdoll mod is installed
+
+                IF IS_CHAR_PLAYING_ANIM player_actor "finish_1" 
+                    WHILE IS_CHAR_PLAYING_ANIM player_actor "finish_1"
+                        GOSUB set_z_angle_char
+                        ATTACH_CAMERA_TO_CHAR player_actor (2.5 -2.15 -0.5) (0.0 0.0 0.0) 0.0 2 
+                        GET_CHAR_ANIM_CURRENT_TIME player_actor "finish_1" (fCurrentTime)                     
+                        IF fCurrentTime >= 0.153    // frame 10/65
+                            IF NOT IS_CHAR_DEAD iChar
+                                CLEAR_CHAR_TASKS iChar
+                                CLEAR_CHAR_TASKS_IMMEDIATELY iChar                   
+                                iTempVar = 0
+                                GOSUB play_sfx_hit                      
+                            ENDIF
+                            IF fCurrentTime >= 0.138
+                                TASK_DIE_NAMED_ANIM iChar ("finish_1_e" "spider") 4.5 -1 
+                                WAIT 0
+                                SET_CHAR_ANIM_SPEED iChar "finish_1_e" 1.25   
+                                WAIT 0                        
+                                SET_TIME_SCALE 0.35                             
+                            ENDIF
+                            IF fCurrentTime >= 0.261
+                                SET_TIME_SCALE 1.0
+                            ENDIF
+
+                            iTempVar = 1
+                            IF fCurrentTime >= 0.523
+                            AND fCurrentTime <= 0.569
+                                GOSUB playWebStrikeSfx
+                                iTempVar = 0
+                            ENDIF
+
+                            IF fCurrentTime >= 0.392    
+                            AND fCurrentTime <= 0.960                    
+                                CLEO_CALL draw_line_from_player_bone_to_char_bone 0 player_actor 25 iChar 2     //25:BONE_RIGHTHAND||35:BONE_LEFTHAND
+                                CLEO_CALL draw_line_from_player_bone_to_char_bone 0 player_actor 35 iChar 2     //35:BONE_LEFTHAND||25:BONE_RIGHTHAND                     
+                            ENDIF
+
+                            iTempVar = 3
+                            IF fCurrentTime >= 0.758
+                                WAIT 0
+                                GOSUB playWebStrikeSfx
+                                iTempVar = 0      
+                                BREAK                 
+                            ENDIF
+
+                            //PRINT_FORMATTED_NOW "~y~Finisher Anim Playing..." 2000                                                    
+                        ENDIF    
+
+                        WAIT 0
+                    ENDWHILE
+                    WAIT 350
+                    RESTORE_CAMERA
+                    RESTORE_CAMERA_JUMPCUT                
+                ENDIF
+            ELSE
+                IF IS_CHAR_PLAYING_ANIM player_actor "finish_1" 
+                    WHILE IS_CHAR_PLAYING_ANIM player_actor "finish_1"
+                        GOSUB set_z_angle_char
+                        TASK_PLAY_ANIM_NON_INTERRUPTABLE iChar ("finish_1_e" "spider") 4.5 (0 1 1 1) -1
+                        WAIT 0
+                        SET_CHAR_ANIM_SPEED iChar "finish_1_e" 1.15                                      
+                        ATTACH_CAMERA_TO_CHAR player_actor (2.5 -2.15 -0.5) (0.0 0.0 0.0) 0.0 2  
+                        GET_CHAR_ANIM_CURRENT_TIME player_actor "finish_1" (fCurrentTime) 
+
+                        IF fCurrentTime >= 0.153    // frame 10/65
+                        AND fCurrentTime <= 0.165    // frame 10/65
                             iTempVar = 0
-                            GOSUB play_sfx_hit                      
-                        ENDIF
-                        IF fCurrentTime >= 0.138
-                            TASK_DIE_NAMED_ANIM iChar ("finish_1_e" "spider") 4.5 -1 
                             WAIT 0
-                            SET_CHAR_ANIM_SPEED iChar "finish_1_e" 1.25   
-                            WAIT 0                        
-                            SET_TIME_SCALE 0.35                             
+                            GOSUB play_sfx_hit                 
+                        ENDIF        
+
+                        IF fCurrentTime >= 0.138 
+                        AND fCurrentTime <= 0.255
+                            SET_TIME_SCALE 0.35 
                         ENDIF
                         IF fCurrentTime >= 0.261
                             SET_TIME_SCALE 1.0
@@ -258,6 +315,7 @@ process_finisher:
                         AND fCurrentTime <= 0.569
                             GOSUB playWebStrikeSfx
                             iTempVar = 0
+                            WAIT 50
                         ENDIF
 
                         IF fCurrentTime >= 0.392    
@@ -268,20 +326,24 @@ process_finisher:
 
                         iTempVar = 3
                         IF fCurrentTime >= 0.758
-                            WAIT 0
+                        AND fCurrentTime >= 0.768
                             GOSUB playWebStrikeSfx
                             iTempVar = 0      
+                            WAIT 0
                             BREAK                 
                         ENDIF
 
                         //PRINT_FORMATTED_NOW "~y~Finisher Anim Playing..." 2000                                                    
-                    ENDIF    
 
-                    WAIT 0
-                ENDWHILE
-                WAIT 350
-                RESTORE_CAMERA
-                RESTORE_CAMERA_JUMPCUT                
+                        WAIT 0
+                    ENDWHILE
+                    DAMAGE_CHAR iChar 100 TRUE
+                    MARK_CHAR_AS_NO_LONGER_NEEDED iChar
+
+                    WAIT 350
+                    RESTORE_CAMERA
+                    RESTORE_CAMERA_JUMPCUT                
+                ENDIF
             ENDIF
         ELSE
             //Finisher 2
@@ -2425,3 +2487,4 @@ create_decision_maker_hate:
     SET_RELATIONSHIp 4 PEDTYPE_GANG10 PEDTYPE_PLAYER1
 RETURN
 */
+
