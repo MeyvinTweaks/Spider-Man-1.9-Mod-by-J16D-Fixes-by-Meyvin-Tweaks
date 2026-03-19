@@ -1870,6 +1870,13 @@ ProcessGame_and_DrawItems_SETTINGS:
                         CLEO_CALL getStatusSpiderMod 0 (iTempVar)
                         BREAK
                     CASE 111   //Toggle HUD
+                        IF GOSUB is_any_hud_element_enabled
+                            iTempVar = 1
+                            SET_CLEO_SHARED_VAR varHUD iTempVar       // 0:OFF || 1:ON
+                        ELSE
+                            iTempVar = 0
+                            SET_CLEO_SHARED_VAR varHUD iTempVar       // 0:OFF || 1:ON
+                        ENDIF                    
                         GET_CLEO_SHARED_VAR varHUD (iTempVar)
                         BREAK
                     CASE 112   //BackGround Music
@@ -6542,7 +6549,6 @@ RETURN
 ///---------------------------------------------------------------------
 reset_panel_parameters:
     iSetCamera = TRUE
-
     iPanelB = 0
     iActiveRow = 1
     iActiveCol = 1    
