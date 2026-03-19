@@ -1136,16 +1136,32 @@ process_web_strike_air:
                         //SET_CHAR_COLLISION iChar TRUE
                         CLEAR_CHAR_TASKS iChar
                         CLEAR_CHAR_TASKS_IMMEDIATELY iChar
-                        TASK_DIE_NAMED_ANIM iChar ("wt_air_hit_c" "spider") 23.0 -1
-                        WAIT 0
-                        GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 1.25 -0.5 (x[0] y[0] z[0])   //0.415
-                        SET_CHAR_COORDINATES_SIMPLE iChar x[0] y[0] z[0]
-                        FIX_CHAR_GROUND_BRIGHTNESS_AND_FADE_IN iChar TRUE FALSE FALSE
+                        IF DOES_FILE_EXIST "modloader/Ragdoll Bullet Physics\Ragdoll_Physics.asi"   //fix bug if Ragdoll mod is installed
+                            TASK_PLAY_ANIM_NON_INTERRUPTABLE iChar ("wt_air_hit_c" "spider") 23.0 (0 1 1 1) -1
+                            WAIT 0
+                            GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 1.25 -0.5 (x[0] y[0] z[0])   //0.415
+                            SET_CHAR_COORDINATES_SIMPLE iChar x[0] y[0] z[0]
+                            FIX_CHAR_GROUND_BRIGHTNESS_AND_FADE_IN iChar TRUE FALSE FALSE                              
+                            IF IS_CHAR_PLAYING_ANIM iChar ("wt_air_hit_c")
+                                IF NOT IS_CHAR_DEAD iChar                
+                                    iTempVar = 3
+                                    GOSUB playWebStrikeSfx    
+                                    WAIT 150
+                                    DAMAGE_CHAR iChar 100 TRUE
+                                    MARK_CHAR_AS_NO_LONGER_NEEDED iChar                                                                                                        
+                                ENDIF
+                            ENDIF                            
+                        ELSE           
+                            TASK_DIE_NAMED_ANIM iChar ("wt_air_hit_c" "spider") 23.0 -1              
+                            WAIT 0
+                            GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 1.25 -0.5 (x[0] y[0] z[0])   //0.415
+                            SET_CHAR_COORDINATES_SIMPLE iChar x[0] y[0] z[0]
+                            FIX_CHAR_GROUND_BRIGHTNESS_AND_FADE_IN iChar TRUE FALSE FALSE
+                            
+                            iTempVar = 3
+                            GOSUB playWebStrikeSfx        
 
-                        iTempVar = 3
-                        GOSUB playWebStrikeSfx
-
-                        GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 1.75 -0.5 (x[0] y[0] z[0])   //0.415
+                            GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 1.75 -0.5 (x[0] y[0] z[0])   //0.415
 
                             WHILE IS_CHAR_PLAYING_ANIM player_actor ("webstrike_air_out_c")
                                 GET_CHAR_ANIM_CURRENT_TIME player_actor ("webstrike_air_out_c") (fCurrentTime)
@@ -1155,7 +1171,8 @@ process_web_strike_air:
                                     BREAK
                                 ENDIF
                                 WAIT 0
-                            ENDWHILE
+                            ENDWHILE                            
+                        ENDIF
 
                         SET_CHAR_HEADING iChar zAngle
                         IF iTempVar = 3
@@ -1177,15 +1194,35 @@ process_web_strike_air:
                         IF IS_CHAR_PLAYING_ANIM player_actor ("webstrike_air_out_d")
                             CLEAR_CHAR_TASKS iChar
                             CLEAR_CHAR_TASKS_IMMEDIATELY iChar
-                            TASK_DIE_NAMED_ANIM iChar ("wt_ground_hit_d" "spider") 23.0 -1
-                            WAIT 0
-                            GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.50 -0.5 (x[0] y[0] z[0])   //0.415
-                            SET_CHAR_COORDINATES_SIMPLE iChar x[0] y[0] z[0]
-                            FIX_CHAR_GROUND_BRIGHTNESS_AND_FADE_IN iChar TRUE FALSE FALSE
-                            SET_CHAR_HEADING iChar zAngle
-                            WAIT 50
-                            iTempVar = 3
-                            GOSUB playWebStrikeSfx
+                            IF DOES_FILE_EXIST "modloader/Ragdoll Bullet Physics\Ragdoll_Physics.asi"   //fix bug if Ragdoll mod is installed
+                                TASK_PLAY_ANIM_NON_INTERRUPTABLE iChar ("wt_ground_hit_d" "spider") 23.0 (0 1 1 1) -1
+                                WAIT 0
+                                GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.50 -0.5 (x[0] y[0] z[0])   //0.415
+                                SET_CHAR_COORDINATES_SIMPLE iChar x[0] y[0] z[0]
+                                FIX_CHAR_GROUND_BRIGHTNESS_AND_FADE_IN iChar TRUE FALSE FALSE
+                                SET_CHAR_HEADING iChar zAngle                                    
+                                IF IS_CHAR_PLAYING_ANIM iChar ("wt_ground_hit_d")
+                                    IF NOT IS_CHAR_DEAD iChar               
+                                        WAIT 50
+                                        iTempVar = 3
+                                        GOSUB playWebStrikeSfx                                                                         
+                                        WAIT 500
+                                        DAMAGE_CHAR iChar 100 TRUE
+                                        MARK_CHAR_AS_NO_LONGER_NEEDED iChar
+                                    ENDIF
+                                ENDIF  
+                            ELSE                              
+                                TASK_DIE_NAMED_ANIM iChar ("wt_ground_hit_d" "spider") 23.0 -1
+                                WAIT 0
+                                GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.50 -0.5 (x[0] y[0] z[0])   //0.415
+                                SET_CHAR_COORDINATES_SIMPLE iChar x[0] y[0] z[0]
+                                FIX_CHAR_GROUND_BRIGHTNESS_AND_FADE_IN iChar TRUE FALSE FALSE
+                                SET_CHAR_HEADING iChar zAngle
+                                WAIT 50
+                                iTempVar = 3
+                                GOSUB playWebStrikeSfx                                 
+                            ENDIF
+
                         ELSE
                             CLEAR_CHAR_TASKS iChar
                             CLEAR_CHAR_TASKS_IMMEDIATELY iChar
@@ -1468,15 +1505,31 @@ process_web_strike_ground:
                     IF IS_CHAR_PLAYING_ANIM player_actor ("webstrike_g_out_d")
                         CLEAR_CHAR_TASKS iChar
                         CLEAR_CHAR_TASKS_IMMEDIATELY iChar
-                        TASK_DIE_NAMED_ANIM iChar ("wt_ground_hit_d" "spider") 31.0 -1
-                        WAIT 0
-                        //GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 -0.05 -0.5 (x[0] y[0] z[0])
-                        //SET_CHAR_COORDINATES_SIMPLE iChar x[0] y[0] z[0]
-                        //FIX_CHAR_GROUND_BRIGHTNESS_AND_FADE_IN iChar TRUE FALSE FALSE
-                        SET_CHAR_HEADING iChar zAngle
-                        WAIT 50
-                        iTempVar = 3
-                        GOSUB playWebStrikeSfx
+                        IF DOES_FILE_EXIST "modloader/Ragdoll Bullet Physics\Ragdoll_Physics.asi"   //fix bug if Ragdoll mod is installed
+                            TASK_PLAY_ANIM_NON_INTERRUPTABLE iChar ("wt_ground_hit_d" "spider") 31.0 (0 1 1 1) -1
+                            WAIT 0
+                            SET_CHAR_HEADING iChar zAngle
+                            IF IS_CHAR_PLAYING_ANIM iChar ("wt_ground_hit_d")
+                                IF NOT IS_CHAR_DEAD iChar
+                                    WAIT 50
+                                    iTempVar = 3
+                                    GOSUB playWebStrikeSfx                                
+                                    WAIT 100
+                                    DAMAGE_CHAR iChar 100 TRUE
+                                    MARK_CHAR_AS_NO_LONGER_NEEDED iChar
+                                ENDIF
+                            ENDIF        
+                        ELSE                        
+                            TASK_DIE_NAMED_ANIM iChar ("wt_ground_hit_d" "spider") 31.0 -1
+                            WAIT 0
+                            //GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 -0.05 -0.5 (x[0] y[0] z[0])
+                            //SET_CHAR_COORDINATES_SIMPLE iChar x[0] y[0] z[0]
+                            //FIX_CHAR_GROUND_BRIGHTNESS_AND_FADE_IN iChar TRUE FALSE FALSE
+                            SET_CHAR_HEADING iChar zAngle
+                            WAIT 50
+                            iTempVar = 3
+                            GOSUB playWebStrikeSfx
+                        ENDIF
                     ELSE
                         iTempVar = 2
                         GOSUB playWebStrikeSfx
@@ -1488,7 +1541,7 @@ process_web_strike_ground:
                         WAIT 0
                         SET_CHAR_HEADING iChar zAngle
                         //--+-- new dodge part added
-                        IF  IS_CHAR_PLAYING_ANIM iChar ("HIT_R")
+                        IF IS_CHAR_PLAYING_ANIM iChar ("HIT_R")
                             WHILE IS_CHAR_PLAYING_ANIM iChar ("HIT_R")
                                 GET_CHAR_ANIM_CURRENT_TIME iChar "HIT_R" (fCurrentTime)
                                 IF fCurrentTime >= 0.4
@@ -2372,4 +2425,3 @@ create_decision_maker_hate:
     SET_RELATIONSHIp 4 PEDTYPE_GANG10 PEDTYPE_PLAYER1
 RETURN
 */
-
