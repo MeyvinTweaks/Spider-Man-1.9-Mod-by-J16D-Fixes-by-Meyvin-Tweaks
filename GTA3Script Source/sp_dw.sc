@@ -642,16 +642,27 @@ RETURN
 
 //-+---------------------web-shoot-------------------------
 assign_task_webshoot:
-    //-+- WebShoot
-    IF IS_BUTTON_PRESSED PAD1 RIGHTSHOULDER2        // ~k~~PED_CYCLE_WEAPON_RIGHT~/
-    AND NOT IS_BUTTON_PRESSED PAD1 LEFTSHOULDER2    // ~k~~PED_CYCLE_WEAPON_LEFT~/ 
-    AND NOT IS_BUTTON_PRESSED PAD1 CIRCLE           // ~k~~PED_FIREWEAPON~
-    AND NOT IS_BUTTON_PRESSED PAD1 TRIANGLE         // ~k~~VEHICLE_ENTER_EXIT~
-    AND NOT IS_BUTTON_PRESSED PAD1 LEFTSHOULDER1    //~k~~PED_ANSWER_PHONE~/ ~k~~PED_FIREWEAPON_ALT~
-        GOSUB process_shot_web
-        WHILE IS_BUTTON_PRESSED PAD1 RIGHTSHOULDER2       // ~k~~PED_CYCLE_WEAPON_RIGHT~/  
+    //-+- Fix WebShooting During Cutscene
+    IF CLEO_CALL isActorInWater 0 player_actor
+    OR IS_ON_SCRIPTED_CUTSCENE 
+    OR IS_ON_CUTSCENE
+        WHILE CLEO_CALL isActorInWater 0 player_actor
+        OR IS_ON_SCRIPTED_CUTSCENE 
+        OR IS_ON_CUTSCENE                
             WAIT 0
         ENDWHILE
+    ELSE
+        //-+- WebShoot
+        IF IS_BUTTON_PRESSED PAD1 RIGHTSHOULDER2        // ~k~~PED_CYCLE_WEAPON_RIGHT~/
+        AND NOT IS_BUTTON_PRESSED PAD1 LEFTSHOULDER2    // ~k~~PED_CYCLE_WEAPON_LEFT~/ 
+        AND NOT IS_BUTTON_PRESSED PAD1 CIRCLE           // ~k~~PED_FIREWEAPON~
+        AND NOT IS_BUTTON_PRESSED PAD1 TRIANGLE         // ~k~~VEHICLE_ENTER_EXIT~
+        AND NOT IS_BUTTON_PRESSED PAD1 LEFTSHOULDER1    //~k~~PED_ANSWER_PHONE~/ ~k~~PED_FIREWEAPON_ALT~
+            GOSUB process_shot_web
+            WHILE IS_BUTTON_PRESSED PAD1 RIGHTSHOULDER2       // ~k~~PED_CYCLE_WEAPON_RIGHT~/  
+                WAIT 0
+            ENDWHILE
+        ENDIF
     ENDIF
 RETURN
 
@@ -2230,6 +2241,24 @@ is_char_gang_ped:
             ELSE
                 RETURN_FALSE
             ENDIF
+        ENDIF
+    ELSE
+        RETURN_FALSE
+    ENDIF
+CLEO_RETURN 0
+}
+{
+//CLEO_CALL isActorInWater 0 player_actor
+isActorInWater:
+    LVAR_INT scplayer   //in
+    LVAR_FLOAT x y z height
+    IF IS_PLAYER_PLAYING scplayer
+        GET_CHAR_COORDINATES scplayer (x y z)
+        GET_WATER_HEIGHT_AT_COORDS x y TRUE (height)
+        IF height > z
+            RETURN_TRUE
+        ELSE
+            RETURN_FALSE
         ENDIF
     ELSE
         RETURN_FALSE

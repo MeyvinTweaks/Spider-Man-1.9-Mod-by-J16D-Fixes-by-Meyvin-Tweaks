@@ -63,6 +63,14 @@ main_loop:
         IF toggleSpiderMod = 1 //TRUE
             IF isInMainMenu = 0     //1:true 0: false
 
+                IF IS_ON_SCRIPTED_CUTSCENE 
+                OR IS_ON_CUTSCENE
+                    WHILE IS_ON_SCRIPTED_CUTSCENE 
+                    OR IS_ON_CUTSCENE                
+                        WAIT 0
+                    ENDWHILE
+                ENDIF
+
                 IF IS_BUTTON_PRESSED PAD1 LEFTSHOULDER1 // PED_ANSWER_PHONE, PED_FIREWEAPON_ALT
                 AND NOT IS_BUTTON_PRESSED PAD1 RIGHTSHOULDER1 // PED_LOCK_TARGET
                     iTempVar2 = 0   //show sfx

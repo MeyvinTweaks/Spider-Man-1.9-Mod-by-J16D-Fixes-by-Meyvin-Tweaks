@@ -49,7 +49,11 @@ main_loop:
         IF toggleSpiderMod = 1 // TRUE
 
             IF CLEO_CALL isActorInWater 0 player_actor
-                WHILE  CLEO_CALL isActorInWater 0 player_actor
+            OR IS_ON_SCRIPTED_CUTSCENE 
+            OR IS_ON_CUTSCENE
+                WHILE CLEO_CALL isActorInWater 0 player_actor
+                OR IS_ON_SCRIPTED_CUTSCENE 
+                OR IS_ON_CUTSCENE                
                     WAIT 0
                 ENDWHILE
             ENDIF
@@ -62,103 +66,103 @@ main_loop:
                 GET_CLEO_SHARED_VAR varBuildingZipFlag (is_zip_to_building) // sp_ml    ||1= Activated     || 0= Deactivated
                 //GET_CLEO_SHARED_VAR varOnmission (iTempVar) // flag_player_on_mission ||0:Off ||1:on mission || 2:car chase || 3:criminal || 4:boss1 || 5:boss2
 
-                IF GOSUB is_not_player_playing_car_chase_anim   //car chase     //Fix bug
-                AND is_in_interior = FALSE
-                AND is_zip_to_building = 1
+                IF is_zip_to_building = 1
 
-                    GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 0.0 (x[1] y[1] z[1])
+                    IF GOSUB is_not_player_playing_car_chase_anim   //car chase     //Fix bug
+                    AND is_in_interior = FALSE
+                        GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 0.0 (x[1] y[1] z[1])
 
-                    //Compatible reservoirs 
-                    IF NOT LOCATE_CHAR_DISTANCE_TO_COORDINATES player_actor -2022.26 13.982 61.60 25.0
-                    AND NOT LOCATE_CHAR_DISTANCE_TO_COORDINATES player_actor -2192.0 389.789 64.624 25.0
-                    AND NOT LOCATE_CHAR_DISTANCE_TO_COORDINATES player_actor -1873.89 900.735 65.2756 25.0
-                    AND NOT LOCATE_CHAR_DISTANCE_TO_COORDINATES player_actor -1812.37 1039.22 82.0859 25.0
-                    AND NOT LOCATE_CHAR_DISTANCE_TO_COORDINATES player_actor -1589.35 951.715 34.5971 25.0
+                        //Compatible reservoirs 
+                        IF NOT LOCATE_CHAR_DISTANCE_TO_COORDINATES player_actor -2022.26 13.982 61.60 25.0
+                        AND NOT LOCATE_CHAR_DISTANCE_TO_COORDINATES player_actor -2192.0 389.789 64.624 25.0
+                        AND NOT LOCATE_CHAR_DISTANCE_TO_COORDINATES player_actor -1873.89 900.735 65.2756 25.0
+                        AND NOT LOCATE_CHAR_DISTANCE_TO_COORDINATES player_actor -1812.37 1039.22 82.0859 25.0
+                        AND NOT LOCATE_CHAR_DISTANCE_TO_COORDINATES player_actor -1589.35 951.715 34.5971 25.0
 
-                        // in: player ped | out: found flag and the edge point (on the roof)
-                        CLEO_CALL find_edge_target 0 (player_actor) (is_edge_available x[0] y[0] z[0])
+                            // in: player ped | out: found flag and the edge point (on the roof)
+                            CLEO_CALL find_edge_target 0 (player_actor) (is_edge_available x[0] y[0] z[0])
 
-                        IF is_edge_available = 1
-                            IF GOSUB is_not_player_playing_anims
-                                z[0] += 0.5
-                                
-                                // standing at the target, without drawing anything.
-                                IF NOT LOCATE_CHAR_ANY_MEANS_3D player_actor x[0] y[0] z[0] 1.0 1.0 1.0 FALSE
-                                    // Not there yet. The final TRUE makes this command draw the marker,
-                                    // so it is only reached (and drawn) when the player is away from the target.
+                            IF is_edge_available = 1
+                                IF GOSUB is_not_player_playing_anims
+                                    z[0] += 0.5
+                                    
+                                    // standing at the target, without drawing anything.
                                     IF NOT LOCATE_CHAR_ANY_MEANS_3D player_actor x[0] y[0] z[0] 1.0 1.0 1.0 FALSE
-                                        GOSUB draw_building_indicator
+                                        // Not there yet. The final TRUE makes this command draw the marker,
+                                        // so it is only reached (and drawn) when the player is away from the target.
+                                        IF NOT LOCATE_CHAR_ANY_MEANS_3D player_actor x[0] y[0] z[0] 1.0 1.0 1.0 FALSE
+                                            GOSUB draw_building_indicator
 
-                                        //----------------------------------- Zip to Point
-                                        // L2 + R2 
-                                        IF IS_BUTTON_PRESSED PAD1 LEFTSHOULDER2         // ~k~~PED_CYCLE_WEAPON_LEFT~/ 
-                                        AND NOT IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
-                                        AND NOT IS_BUTTON_PRESSED PAD1 SQUARE           // ~k~~PED_JUMPING~
-                                        AND NOT IS_BUTTON_PRESSED PAD1 CIRCLE           // ~k~~PED_FIREWEAPON~
-
-                                            IF IS_BUTTON_PRESSED PAD1 RIGHTSHOULDER2       // ~k~~PED_CYCLE_WEAPON_RIGHT~/ 
+                                            //----------------------------------- Zip to Point
+                                            // L2 + R2 
+                                            IF IS_BUTTON_PRESSED PAD1 LEFTSHOULDER2         // ~k~~PED_CYCLE_WEAPON_LEFT~/ 
                                             AND NOT IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                             AND NOT IS_BUTTON_PRESSED PAD1 SQUARE           // ~k~~PED_JUMPING~
-                                            AND NOT IS_BUTTON_PRESSED PAD1 CIRCLE           // ~k~~PED_FIREWEAPON~    
-                                                
+                                            AND NOT IS_BUTTON_PRESSED PAD1 CIRCLE           // ~k~~PED_FIREWEAPON~
 
-                                                IF CLEO_CALL isClearInSight 0 player_actor (0.0 0.0 -3.0) (1 0 0 0 0)   //AIR
-                                                    //----------------------------------- Zip if $player on Air
-                                                    GOSUB REQUEST_Animations
-                                                    GOSUB REQUEST_webAnimations
-                                                    GOSUB in_air_zip_to_buidling
-                                                        IF IS_BUTTON_PRESSED PAD1 SQUARE  // ~k~~PED_JUMPING~
-                                                            IF GOSUB does_skill_Point_Launch_enabled
-                                                                GOSUB point_launch_air_building                                                           
+                                                IF IS_BUTTON_PRESSED PAD1 RIGHTSHOULDER2       // ~k~~PED_CYCLE_WEAPON_RIGHT~/ 
+                                                AND NOT IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
+                                                AND NOT IS_BUTTON_PRESSED PAD1 SQUARE           // ~k~~PED_JUMPING~
+                                                AND NOT IS_BUTTON_PRESSED PAD1 CIRCLE           // ~k~~PED_FIREWEAPON~    
+                                                    
+
+                                                    IF CLEO_CALL isClearInSight 0 player_actor (0.0 0.0 -3.0) (1 0 0 0 0)   //AIR
+                                                        //----------------------------------- Zip if $player on Air
+                                                        GOSUB REQUEST_Animations
+                                                        GOSUB REQUEST_webAnimations
+                                                        GOSUB in_air_zip_to_buidling
+                                                            IF IS_BUTTON_PRESSED PAD1 SQUARE  // ~k~~PED_JUMPING~
+                                                                IF GOSUB does_skill_Point_Launch_enabled
+                                                                    GOSUB point_launch_air_building                                                           
+                                                                ELSE
+                                                                    GET_CHAR_HEADING player_actor (zAngle)
+                                                                    GET_COORD_FROM_ANGLED_DISTANCE x[0] y[0] zAngle 0.2 (x[0] y[0])
+                                                                    GOSUB stay_on_building_from_air                                                     
+                                                                ENDIF
                                                             ELSE
                                                                 GET_CHAR_HEADING player_actor (zAngle)
                                                                 GET_COORD_FROM_ANGLED_DISTANCE x[0] y[0] zAngle 0.2 (x[0] y[0])
-                                                                GOSUB stay_on_building_from_air                                                     
-                                                            ENDIF
-                                                        ELSE
-                                                            GET_CHAR_HEADING player_actor (zAngle)
-                                                            GET_COORD_FROM_ANGLED_DISTANCE x[0] y[0] zAngle 0.2 (x[0] y[0])
-                                                            GOSUB stay_on_building_from_air                                                   
-                                                        ENDIF                                                                                          
+                                                                GOSUB stay_on_building_from_air                                                   
+                                                            ENDIF                                                                                          
+                                                            
+                                                    ELSE
+                                                        //----------------------------------- Zip if $player on Ground
+                                                        GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 0.0 (x[1] y[1] z[1])
                                                         
-                                                ELSE
-                                                    //----------------------------------- Zip if $player on Ground
-                                                    GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 0.0 (x[1] y[1] z[1])
-                                                    
-                                                    //----------------------------------- Zip if $player on Ground
-                                                    GOSUB REQUEST_Animations
-                                                    GOSUB REQUEST_webAnimations
-                                                    GOSUB on_ground_zip_to_point
+                                                        //----------------------------------- Zip if $player on Ground
+                                                        GOSUB REQUEST_Animations
+                                                        GOSUB REQUEST_webAnimations
+                                                        GOSUB on_ground_zip_to_point
 
-                                                    IF IS_BUTTON_PRESSED PAD1 SQUARE  // ~k~~PED_JUMPING~
-                                                        IF GOSUB does_skill_Point_Launch_enabled
-                                                            GOSUB point_launch_ground_building
+                                                        IF IS_BUTTON_PRESSED PAD1 SQUARE  // ~k~~PED_JUMPING~
+                                                            IF GOSUB does_skill_Point_Launch_enabled
+                                                                GOSUB point_launch_ground_building
+                                                            ELSE
+                                                                GET_CHAR_HEADING player_actor (zAngle)
+                                                                GET_COORD_FROM_ANGLED_DISTANCE x[0] y[0] zAngle 0.25 (x[0] y[0])
+                                                                GOSUB stay_on_building_from_ground
+                                                            ENDIF
                                                         ELSE
                                                             GET_CHAR_HEADING player_actor (zAngle)
                                                             GET_COORD_FROM_ANGLED_DISTANCE x[0] y[0] zAngle 0.25 (x[0] y[0])
                                                             GOSUB stay_on_building_from_ground
                                                         ENDIF
-                                                    ELSE
-                                                        GET_CHAR_HEADING player_actor (zAngle)
-                                                        GET_COORD_FROM_ANGLED_DISTANCE x[0] y[0] zAngle 0.25 (x[0] y[0])
-                                                        GOSUB stay_on_building_from_ground
-                                                    ENDIF
 
-                                                    IF DOES_OBJECT_EXIST obj
-                                                        SET_OBJECT_COLLISION obj TRUE
-                                                    ENDIF    
+                                                        IF DOES_OBJECT_EXIST obj
+                                                            SET_OBJECT_COLLISION obj TRUE
+                                                        ENDIF    
+
+                                                    ENDIF
 
                                                 ENDIF
 
                                             ENDIF
-
                                         ENDIF
                                     ENDIF
                                 ENDIF
                             ENDIF
                         ENDIF
                     ENDIF
-
                 ENDIF
             ENDIF
 
