@@ -18,9 +18,9 @@ WAIT 0
 WAIT 0
 LVAR_INT player_actor toggleSpiderMod is_in_interior
 LVAR_INT iTempVar randomVal is_zip_to_building is_edge_available  
-LVAR_FLOAT xAngle zAngle x[4] y[4] z[4] v1 v2 
+LVAR_FLOAT xAngle zAngle x[3] y[3] z[3] v1 v2 rwAngle
 LVAR_FLOAT fDistance currentTime fCharSpeed
-LVAR_INT baseObject iWebActor iWebActorR obj sfx sfxB
+LVAR_INT rwCross baseObject iWebActor iWebActorR sfx sfxB
 
 CONST_INT STOP 0 
 
@@ -28,6 +28,8 @@ GET_PLAYER_CHAR 0 player_actor
 GOSUB REQUEST_Animations
 GOSUB REQUEST_webAnimations
 GOSUB loadTextures
+GET_TEXTURE_FROM_SPRITE objCrosshair rwCross
+WAIT 150
 USE_TEXT_COMMANDS TRUE
 
 start_check:
@@ -83,29 +85,28 @@ main_loop:
                             CLEO_CALL find_edge_target 0 (player_actor) (is_edge_available x[0] y[0] z[0])
 
                             IF is_edge_available = 1
-                                IF GOSUB is_not_player_playing_anims
-                                    z[0] += 0.5
-                                    
-                                    // standing at the target, without drawing anything.
+                                z[0] += 0.5
+                                
+                                // standing at the target, without drawing anything.
+                                IF NOT LOCATE_CHAR_ANY_MEANS_3D player_actor x[0] y[0] z[0] 1.0 1.0 1.0 FALSE
+                                    // Not there yet. The final TRUE makes this command draw the marker,
+                                    // so it is only reached (and drawn) when the player is away from the target.
                                     IF NOT LOCATE_CHAR_ANY_MEANS_3D player_actor x[0] y[0] z[0] 1.0 1.0 1.0 FALSE
-                                        // Not there yet. The final TRUE makes this command draw the marker,
-                                        // so it is only reached (and drawn) when the player is away from the target.
-                                        IF NOT LOCATE_CHAR_ANY_MEANS_3D player_actor x[0] y[0] z[0] 1.0 1.0 1.0 FALSE
-                                            GOSUB draw_building_indicator
+                                        GOSUB draw_building_indicator
 
-                                            //----------------------------------- Zip to Point
-                                            // L2 + R2 
-                                            IF IS_BUTTON_PRESSED PAD1 LEFTSHOULDER2         // ~k~~PED_CYCLE_WEAPON_LEFT~/ 
+                                        //----------------------------------- Zip to Point
+                                        // L2 + R2 
+                                        IF IS_BUTTON_PRESSED PAD1 LEFTSHOULDER2         // ~k~~PED_CYCLE_WEAPON_LEFT~/ 
+                                        AND NOT IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
+                                        AND NOT IS_BUTTON_PRESSED PAD1 SQUARE           // ~k~~PED_JUMPING~
+                                        AND NOT IS_BUTTON_PRESSED PAD1 CIRCLE           // ~k~~PED_FIREWEAPON~
+
+                                            IF IS_BUTTON_PRESSED PAD1 RIGHTSHOULDER2       // ~k~~PED_CYCLE_WEAPON_RIGHT~/ 
                                             AND NOT IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                             AND NOT IS_BUTTON_PRESSED PAD1 SQUARE           // ~k~~PED_JUMPING~
-                                            AND NOT IS_BUTTON_PRESSED PAD1 CIRCLE           // ~k~~PED_FIREWEAPON~
-
-                                                IF IS_BUTTON_PRESSED PAD1 RIGHTSHOULDER2       // ~k~~PED_CYCLE_WEAPON_RIGHT~/ 
-                                                AND NOT IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
-                                                AND NOT IS_BUTTON_PRESSED PAD1 SQUARE           // ~k~~PED_JUMPING~
-                                                AND NOT IS_BUTTON_PRESSED PAD1 CIRCLE           // ~k~~PED_FIREWEAPON~    
-                                                    
-
+                                            AND NOT IS_BUTTON_PRESSED PAD1 CIRCLE           // ~k~~PED_FIREWEAPON~    
+                                                
+                                                IF GOSUB is_not_player_playing_anims
                                                     IF CLEO_CALL isClearInSight 0 player_actor (0.0 0.0 -3.0) (1 0 0 0 0)   //AIR
                                                         //----------------------------------- Zip if $player on Air
                                                         GOSUB REQUEST_Animations
@@ -148,15 +149,10 @@ main_loop:
                                                             GOSUB stay_on_building_from_ground
                                                         ENDIF
 
-                                                        IF DOES_OBJECT_EXIST obj
-                                                            SET_OBJECT_COLLISION obj TRUE
-                                                        ENDIF    
-
                                                     ENDIF
-
                                                 ENDIF
-
                                             ENDIF
+
                                         ENDIF
                                     ENDIF
                                 ENDIF
@@ -190,11 +186,16 @@ GOTO main_loop
 draw_building_indicator:
     GET_CLEO_SHARED_VAR varHUD (iTempVar)
     IF iTempVar = 1     // 0:OFF || 1:ON
-        CONVERT_3D_TO_SCREEN_2D (x[0] y[0] z[0]) TRUE TRUE (v1 v2) (x[3] y[3])
-        GET_FIXED_XY_ASPECT_RATIO 30.0 30.0 (x[3] y[3])
+        CONVERT_3D_TO_SCREEN_2D (x[0] y[0] z[0]) TRUE TRUE (v1 v2) (x[2] y[2])
+        GET_FIXED_XY_ASPECT_RATIO 50.0 50.0 (x[2] y[2])
         USE_TEXT_COMMANDS FALSE
         SET_SPRITES_DRAW_BEFORE_FADE TRUE
-        DRAW_SPRITE objCrosshair (v1 v2) (x[3] y[3]) (255 255 255 200)
+        //DRAW_SPRITE objCrosshair (v1 v2) (x[3] y[3]) (255 255 255 200)
+        rwAngle += 3.0
+        IF rwAngle >= 360.0
+            rwAngle = 0.0
+        ENDIF
+        DRAW_TEXTURE_PLUS rwCross DRAW_EVENT_BEFORE_HUD (v1 v2) (x[2] y[2]) rwAngle 0.0 FALSE -1 -1 (255 255 255 200)           
         IF GOSUB is_spider_hud_enabled
             GOSUB draw_tip_key_command
         ENDIF
@@ -203,11 +204,11 @@ RETURN
 
 draw_tip_key_command:
     //GET_FIXED_XY_ASPECT_RATIO 120.0 60.0 (x[3] y[3])
-    x[3] = 90.00
-    y[3] = 56.00
+    x[2] = 90.00
+    y[2] = 56.00
     USE_TEXT_COMMANDS FALSE
     SET_SPRITES_DRAW_BEFORE_FADE TRUE
-    DRAW_SPRITE idTip1 (50.0 400.0) (x[3] y[3]) (255 255 255 200)
+    DRAW_SPRITE idTip1 (50.0 400.0) (x[2] y[2]) (255 255 255 200)
     IF IS_PC_USING_JOYPAD
         iTempVar = 703  //~k~~PED_CYCLE_WEAPON_LEFT~
         CLEO_CALL GUI_DrawHelperText 0 (45.0 400.0) (iTempVar 2) (0.0 0.0)   // gxtId(i)|Format(i)|LeftPadding(f)|TopPadding(f)
@@ -236,7 +237,7 @@ RETURN
 in_air_zip_to_buidling:
     GOSUB destroyTwoWebs
     GOSUB createTwoWebs
-    //GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 0.0 (x[2] y[2] z[2])
+
     CLEAR_CHAR_TASKS player_actor
     CLEAR_CHAR_TASKS_IMMEDIATELY player_actor
     TASK_PLAY_ANIM_NON_INTERRUPTABLE player_actor ("airToLampA" "spider") 13.0 (0 1 1 1) -2
@@ -268,9 +269,6 @@ in_air_zip_to_buidling:
 
         WAIT 0
     ENDWHILE
-    IF DOES_OBJECT_EXIST obj    
-        SET_OBJECT_COLLISION obj FALSE  //fix camera&attach bug
-    ENDIF
 
     GENERATE_RANDOM_INT_IN_RANGE 0 3 (randomVal)
     GOSUB playWebSound
@@ -291,7 +289,7 @@ in_air_zip_to_buidling:
     ENDIF
 
     timera = 0
-    //WHILE fDistance >= x[2]     //_distance              
+            
     IF NOT LOCATE_CHAR_DISTANCE_TO_COORDINATES player_actor x[0] y[0] z[0] 1.5
 
         WHILE NOT LOCATE_CHAR_DISTANCE_TO_COORDINATES player_actor x[0] y[0] z[0] 1.5
@@ -1319,44 +1317,6 @@ setCharViewPointToCamera:
     GET_HEADING_FROM_VECTOR_2D xPoint yPoint (newAngle)
     SET_CHAR_HEADING scplayer newAngle
 CLEO_RETURN 0
-}
-
-{
-//CLEO_CALL get_object_near_char 0 scplayer 60.0 (iNewObj)
-get_object_near_char:
-    LVAR_INT scplayer   //in
-    LVAR_FLOAT fMaxDistance //in
-    LVAR_INT p i obj iNewObj
-    LVAR_FLOAT x[2] y[2] z[2] fDistance v1 v2
-    IF DOES_CHAR_EXIST scplayer
-        i = 0
-        WHILE GET_ANY_OBJECT_NO_SAVE_RECURSIVE i (i obj)
-            IF DOES_OBJECT_EXIST obj
-                GET_OFFSET_FROM_OBJECT_IN_WORLD_COORDS obj (0.0 0.0 0.0) (x[1] y[1] z[1])
-                GET_ACTIVE_CAMERA_COORDINATES (x[0] y[0] z[0])
-                GET_DISTANCE_BETWEEN_COORDS_3D (x[0] y[0] z[0]) (x[1] y[1] z[1]) (fDistance) 
-                IF fMaxDistance >= fDistance
-                    IF IS_OBJECT_ON_SCREEN obj
-                    AND IS_LINE_OF_SIGHT_CLEAR (x[0] y[0] z[0]) (x[1] y[1] z[1]) (0 0 0 1 0)   //(isSolid isCar isActor isObject isParticle)
-
-                        CONVERT_3D_TO_SCREEN_2D (x[1] y[1] z[1]) TRUE TRUE (v1 v2) (x[0] y[0])
-                        GET_DISTANCE_BETWEEN_COORDS_2D (339.0 179.0) (v1 v2) (fDistance)
-                        IF 70.0 > fDistance
-                            iNewObj = obj
-                            BREAK
-                        ENDIF
-
-                    ENDIF
-                ENDIF
-            ENDIF
-        ENDWHILE
-        IF DOES_OBJECT_EXIST iNewObj
-            RETURN_TRUE
-        ELSE
-            RETURN_FALSE
-        ENDIF
-    ENDIF
-CLEO_RETURN 0 iNewObj
 }
 
 {
