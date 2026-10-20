@@ -61,9 +61,9 @@ main_loop:
 
                     IF DOES_OBJECT_EXIST obj    //secure check
                         iTempVar = 0
-                        SET_CLEO_SHARED_VAR varBuildingZipFlag iTempVar
-
-                        IF CLEO_CALL get_object_offset_indicator 0 obj (x[0] y[0] z[0]) //Lamps
+                        SET_CLEO_SHARED_VAR varBuildingZipFlag iTempVar   
+                        
+                        IF CLEO_CALL get_object_offset_indicator 0 obj (x[0] y[0] z[0]) //Lamps                     
                             GOSUB draw_indicator_lamps                                                    
 
                             //----------------------------------- Zip to Point

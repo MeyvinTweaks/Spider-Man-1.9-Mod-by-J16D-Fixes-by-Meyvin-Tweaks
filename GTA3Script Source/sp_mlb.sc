@@ -1,6 +1,6 @@
 // by Meyvin Tweaks
 // Web zip to buildings (In BETA , there might be some bugs due to some collisions are not perfect on the vanilla game , need to make proper collision)
-// Spider-Man Mod for GTA SA c.2018 - 2023
+// Spider-Man Mod for GTA SA c.2018 - 2026
 // Original Shine GUI by Junior_Djjr
 // Official Page: https://forum.mixmods.com.br/f16-utilidades/t694-shine-gui-crie-interfaces-personalizadas
 // You need CLEO+: https://forum.mixmods.com.br/f141-gta3script-cleo/t5206-como-criar-scripts-com-cleo
@@ -17,10 +17,10 @@ WAIT 0
 WAIT 0
 WAIT 0
 LVAR_INT player_actor toggleSpiderMod is_in_interior
-LVAR_INT iTempVar randomVal is_zip_to_building   
+LVAR_INT iTempVar randomVal is_zip_to_building is_edge_available  
 LVAR_FLOAT xAngle zAngle x[4] y[4] z[4] v1 v2 
 LVAR_FLOAT fDistance currentTime fCharSpeed
-LVAR_INT baseObject iWebActor iWebActorR obj idModel sfx sfxB
+LVAR_INT baseObject iWebActor iWebActorR obj sfx sfxB
 
 CONST_INT STOP 0 
 
@@ -30,16 +30,13 @@ GOSUB REQUEST_webAnimations
 GOSUB loadTextures
 USE_TEXT_COMMANDS TRUE
 
-iTempVar = 1
-SET_CLEO_SHARED_VAR varBuildingZipFlag iTempVar
-
 start_check:
 GOSUB readVars
 IF toggleSpiderMod = 0
     WHILE toggleSpiderMod = 0
         WAIT 0
         GOSUB readVars 
-        IF toggleSpiderMod = 1
+        IF toggleSpiderMod = 1     
             BREAK
         ENDIF
     ENDWHILE
@@ -65,10 +62,11 @@ main_loop:
                 GET_CLEO_SHARED_VAR varBuildingZipFlag (is_zip_to_building) // sp_ml    ||1= Activated     || 0= Deactivated
                 //GET_CLEO_SHARED_VAR varOnmission (iTempVar) // flag_player_on_mission ||0:Off ||1:on mission || 2:car chase || 3:criminal || 4:boss1 || 5:boss2
 
-                //IF NOT iTempVar = 2   //car chase     //Fix bug
-                IF GOSUB is_not_player_playing_car_chase_anim
+                IF GOSUB is_not_player_playing_car_chase_anim   //car chase     //Fix bug
                 AND is_in_interior = FALSE
                 AND is_zip_to_building = 1
+
+                    GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 0.0 (x[1] y[1] z[1])
 
                     //Compatible reservoirs 
                     IF NOT LOCATE_CHAR_DISTANCE_TO_COORDINATES player_actor -2022.26 13.982 61.60 25.0
@@ -77,49 +75,56 @@ main_loop:
                     AND NOT LOCATE_CHAR_DISTANCE_TO_COORDINATES player_actor -1812.37 1039.22 82.0859 25.0
                     AND NOT LOCATE_CHAR_DISTANCE_TO_COORDINATES player_actor -1589.35 951.715 34.5971 25.0
 
-                        // Buildings
-                        IF GOSUB get_building_side
-                            GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 0.0 (x[1] y[1] z[1])
-                            //IF z[0] >= z[1]   // fix for stuck player                        
+                        // in: player ped | out: found flag and the edge point (on the roof)
+                        CLEO_CALL find_edge_target 0 (player_actor) (is_edge_available x[0] y[0] z[0])
+
+                        IF is_edge_available = 1
+                            IF GOSUB is_not_player_playing_anims
+                                z[0] += 0.5
                                 
-                                //----------------------------------- Zip to Point
-                                // L2 + R2 
-                                IF IS_BUTTON_PRESSED PAD1 LEFTSHOULDER2         // ~k~~PED_CYCLE_WEAPON_LEFT~/ 
-                                AND NOT IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
-                                AND NOT IS_BUTTON_PRESSED PAD1 SQUARE           // ~k~~PED_JUMPING~
-                                AND NOT IS_BUTTON_PRESSED PAD1 CIRCLE           // ~k~~PED_FIREWEAPON~
+                                // standing at the target, without drawing anything.
+                                IF NOT LOCATE_CHAR_ANY_MEANS_3D player_actor x[0] y[0] z[0] 1.0 1.0 1.0 FALSE
+                                    // Not there yet. The final TRUE makes this command draw the marker,
+                                    // so it is only reached (and drawn) when the player is away from the target.
+                                    IF NOT LOCATE_CHAR_ANY_MEANS_3D player_actor x[0] y[0] z[0] 1.0 1.0 1.0 FALSE
+                                        GOSUB draw_building_indicator
 
-                                    IF IS_BUTTON_PRESSED PAD1 RIGHTSHOULDER2       // ~k~~PED_CYCLE_WEAPON_RIGHT~/ 
-                                    AND NOT IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
-                                    AND NOT IS_BUTTON_PRESSED PAD1 SQUARE           // ~k~~PED_JUMPING~
-                                    AND NOT IS_BUTTON_PRESSED PAD1 CIRCLE           // ~k~~PED_FIREWEAPON~    
-                                        
-                                        IF GOSUB is_not_player_playing_swing_anims
+                                        //----------------------------------- Zip to Point
+                                        // L2 + R2 
+                                        IF IS_BUTTON_PRESSED PAD1 LEFTSHOULDER2         // ~k~~PED_CYCLE_WEAPON_LEFT~/ 
+                                        AND NOT IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
+                                        AND NOT IS_BUTTON_PRESSED PAD1 SQUARE           // ~k~~PED_JUMPING~
+                                        AND NOT IS_BUTTON_PRESSED PAD1 CIRCLE           // ~k~~PED_FIREWEAPON~
 
-                                            IF CLEO_CALL isClearInSight 0 player_actor (0.0 0.0 -3.0) (1 0 0 0 0)   //AIR
-                                                //----------------------------------- Zip if $player on Air
-                                                GOSUB REQUEST_Animations
-                                                GOSUB REQUEST_webAnimations
-                                                GOSUB in_air_zip_to_buidling
-                                                    IF IS_BUTTON_PRESSED PAD1 SQUARE  // ~k~~PED_JUMPING~
-                                                        IF GOSUB does_skill_Point_Launch_enabled
-                                                            GOSUB point_launch_air_building                                                           
+                                            IF IS_BUTTON_PRESSED PAD1 RIGHTSHOULDER2       // ~k~~PED_CYCLE_WEAPON_RIGHT~/ 
+                                            AND NOT IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
+                                            AND NOT IS_BUTTON_PRESSED PAD1 SQUARE           // ~k~~PED_JUMPING~
+                                            AND NOT IS_BUTTON_PRESSED PAD1 CIRCLE           // ~k~~PED_FIREWEAPON~    
+                                                
+
+                                                IF CLEO_CALL isClearInSight 0 player_actor (0.0 0.0 -3.0) (1 0 0 0 0)   //AIR
+                                                    //----------------------------------- Zip if $player on Air
+                                                    GOSUB REQUEST_Animations
+                                                    GOSUB REQUEST_webAnimations
+                                                    GOSUB in_air_zip_to_buidling
+                                                        IF IS_BUTTON_PRESSED PAD1 SQUARE  // ~k~~PED_JUMPING~
+                                                            IF GOSUB does_skill_Point_Launch_enabled
+                                                                GOSUB point_launch_air_building                                                           
+                                                            ELSE
+                                                                GET_CHAR_HEADING player_actor (zAngle)
+                                                                GET_COORD_FROM_ANGLED_DISTANCE x[0] y[0] zAngle 0.2 (x[0] y[0])
+                                                                GOSUB stay_on_building_from_air                                                     
+                                                            ENDIF
                                                         ELSE
                                                             GET_CHAR_HEADING player_actor (zAngle)
                                                             GET_COORD_FROM_ANGLED_DISTANCE x[0] y[0] zAngle 0.2 (x[0] y[0])
-                                                            GOSUB stay_on_building_from_air                                                     
-                                                        ENDIF
-                                                    ELSE
-                                                        GET_CHAR_HEADING player_actor (zAngle)
-                                                        GET_COORD_FROM_ANGLED_DISTANCE x[0] y[0] zAngle 0.2 (x[0] y[0])
-                                                        GOSUB stay_on_building_from_air                                                   
-                                                    ENDIF                                                                                          
+                                                            GOSUB stay_on_building_from_air                                                   
+                                                        ENDIF                                                                                          
+                                                        
+                                                ELSE
+                                                    //----------------------------------- Zip if $player on Ground
+                                                    GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 0.0 (x[1] y[1] z[1])
                                                     
-
-                                            ELSE
-                                                //----------------------------------- Zip if $player on Ground
-                                                GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 0.0 (x[1] y[1] z[1])
-                                                IF z[0] >= z[1]   // fix for stuck player
                                                     //----------------------------------- Zip if $player on Ground
                                                     GOSUB REQUEST_Animations
                                                     GOSUB REQUEST_webAnimations
@@ -143,19 +148,20 @@ main_loop:
                                                         SET_OBJECT_COLLISION obj TRUE
                                                     ENDIF    
 
-                                                ENDIF                                            
+                                                ENDIF
+
                                             ENDIF
+
                                         ENDIF
                                     ENDIF
                                 ENDIF
-                            //ENDIF
-
+                            ENDIF
                         ENDIF
                     ENDIF
-                //ELSE
-                    //PRINT_FORMATTED_NOW "~r~Can't Web Zip At The Moment!" 1000                    
+
                 ENDIF
             ENDIF
+
         ELSE
             // Release files
             WAIT 1000
@@ -176,140 +182,6 @@ main_loop:
     WAIT 0
 GOTO main_loop 
 
-get_building_side:
-    CLEO_CALL getXYZAimCoords 0 player_actor 30.0 0.0 (x[0] y[0] z[0]) (x[1] y[1] z[1]) //(fDistance)
-    z[0] += 0.35
-    CLEO_CALL getXYZAimCoords 0 player_actor 30.0 1.0 (x[2] y[2] z[2]) (x[3] y[3] z[3]) //(fDistance)
-
-    CLEO_CALL get_building_id 0 player_actor 25.0 0.0 (idModel)
-    CLEO_CALL get_distance_between_coordinates 0 player_actor (x[0] y[0] z[0]) (fDistance) 
-    CLEO_CALL idModelExist 0 (idModel)                                  //check if model available within range    
-    GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 0.0 (x[1] y[1] z[1])
-
-    //DRAW_CORONA x[0] y[0] z[0] 0.40 CORONATYPE_SHINYSTAR FLARETYPE_NONE 255 0 0
-    //DRAW_CORONA x[1] y[1] z[1] 0.40 CORONATYPE_SHINYSTAR FLARETYPE_NONE 0 0 255    
-    //PRINT_FORMATTED_NOW "VectorN1 %.2f %.2f %.2f ~n~VectorN2 %.2f %.2f %.2f ~n~idModel :~y~ %i Distance : %.2f" 1000 x[2] y[2] z[2] x[3] y[3] z[3] idModel fDistance  //DEBUG 
-
-    IF NOT x[0] = x[2]
-    OR NOT y[0] = y[2]
-    OR NOT z[0] = z[2]
-        IF z[0] >= z[1]   // fix for stuck player 
-            IF CLEO_CALL isClearInSightSphereRays 0 player_actor (x[0] y[0] z[0] x[0] y[0] z[0] x[2] y[2] z[2]) (0.0 0.0 3.0) (1 0 0 0 0)
-                //PRINT_FORMATTED_NOW "~y~ Collision Found" 1000 iTempVar
-                IF GOSUB is_sf_model_id_allowed
-                    GOSUB draw_building_indicator
-                    RETURN_TRUE
-                    RETURN        
-                ENDIF
-            ENDIF   
-        ELSE
-            IF z[0] < z[1]   // fix for stuck player 
-                IF CLEO_CALL isClearInSightGroundSphereRays 0 player_actor (x[0] y[0] z[0] x[0] y[0] z[0] x[2] y[2] z[2]) (0.0 0.0 3.0) (1 0 0 0 0)
-                    //PRINT_FORMATTED_NOW "~y~ Collision Found" 1000 iTempVar
-                    IF GOSUB is_sf_model_id_allowed
-                        GOSUB draw_building_indicator
-                        RETURN_TRUE
-                        RETURN        
-                    ENDIF
-                ENDIF 
-            ENDIF
-        ENDIF        
-    ENDIF
-
-    //OR NOT z[2] = z[3]
-        
-    /*        IF x[2] = 10.0         
-                IF x[3] = 10.0
-                OR x[3] = -10.0
-                OR y[3] = 10.0
-                OR y[3] = -10.0
-                OR z[3] = 10.0
-                OR z[3] = -10.0
-                    RETURN_FALSE
-                    RETURN
-                ELSE
-                    RETURN_TRUE
-                    RETURN
-                ENDIF
-            ENDIF
-            IF x[2] = -10.0
-                IF x[3] = 10.0
-                OR x[3] = -10.0
-                OR y[3] = 10.0
-                OR y[3] = -10.0
-                OR z[3] = 10.0
-                OR z[3] = -10.0
-                    RETURN_FALSE
-                    RETURN
-                ELSE
-                    RETURN_TRUE
-                    RETURN
-                ENDIF
-            ENDIF
-
-            IF y[2] = 10.0         
-                IF x[3] = 10.0
-                OR x[3] = -10.0
-                OR y[3] = 10.0
-                OR y[3] = -10.0
-                OR z[3] = 10.0
-                OR z[3] = -10.0
-                    RETURN_FALSE
-                    RETURN
-                ELSE
-                    RETURN_TRUE
-                    RETURN
-                ENDIF
-            ENDIF
-
-            IF y[2] = -10.0         
-                IF x[3] = 10.0
-                OR x[3] = -10.0
-                OR y[3] = 10.0
-                OR y[3] = -10.0
-                OR z[3] = 10.0
-                OR z[3] = -10.0
-                    RETURN_FALSE
-                    RETURN
-                ELSE
-                    RETURN_TRUE
-                    RETURN
-                ENDIF
-            ENDIF
-
-            IF z[2] = 10.0         
-                IF x[3] = 10.0
-                OR x[3] = -10.0
-                OR y[3] = 10.0
-                OR y[3] = -10.0
-                OR z[3] = 10.0
-                OR z[3] = -10.0
-                    RETURN_FALSE
-                    RETURN
-                ELSE
-                    RETURN_TRUE
-                    RETURN
-                ENDIF
-            ENDIF 
-            IF z[2] = -10.0
-                IF x[3] = 10.0
-                OR x[3] = -10.0
-                OR y[3] = 10.0
-                OR y[3] = -10.0
-                OR z[3] = 10.0
-                OR z[3] = -10.0
-                    RETURN_FALSE
-                    RETURN   
-                ELSE
-                    RETURN_TRUE
-                    RETURN
-                ENDIF             
-            ENDIF                      
-                 */
-        //ENDIF    
-    //ENDIF
-    RETURN_FALSE
-RETURN
 
 draw_building_indicator:
     GET_CLEO_SHARED_VAR varHUD (iTempVar)
@@ -364,7 +236,7 @@ in_air_zip_to_buidling:
     CLEAR_CHAR_TASKS player_actor
     CLEAR_CHAR_TASKS_IMMEDIATELY player_actor
     TASK_PLAY_ANIM_NON_INTERRUPTABLE player_actor ("airToLampA" "spider") 13.0 (0 1 1 1) -2
-    WAIT 1
+    WAIT 0
     SET_CHAR_ANIM_SPEED player_actor "airToLampA" 2.0
     WHILE IS_CHAR_PLAYING_ANIM player_actor ("airToLampA")
         GET_CHAR_ANIM_CURRENT_TIME player_actor ("airToLampA") (currentTime)
@@ -380,7 +252,7 @@ in_air_zip_to_buidling:
         IF DOES_OBJECT_EXIST baseObject
             SET_OBJECT_ROTATION baseObject xAngle 0.0 zAngle
         ENDIF
-        //IF NOT IS_CHAR_REALLY_IN_AIR player_actor
+
         IF CLEO_CALL isClearInSight 0 player_actor (0.0 0.0 -2.0) (1 0 0 0 0)   //AIR
         ELSE
             //CLEAR_CHAR_TASKS player_actor
@@ -389,6 +261,7 @@ in_air_zip_to_buidling:
             GOSUB destroyTwoWebs
             RETURN
         ENDIF
+
         WAIT 0
     ENDWHILE
     IF DOES_OBJECT_EXIST obj    
@@ -464,6 +337,7 @@ in_air_zip_to_buidling:
             CLEO_CALL setCharVelocityTo 0 player_actor (x[0] y[0] z[0]) fCharSpeed
             //PRINT_FORMATTED_NOW "vel:%.1f" 1 fCharSpeed //DEBUG
 
+            /*
             IF NOT IS_LINE_OF_SIGHT_CLEAR (x[1] y[1] z[1]) (x[0] y[0] z[0]) (1 1 0 1 0)
             //CLEO_CALL isClearBetweenCoords 0 (x[1] y[1] z[1]) (x[0] y[0] z[0]) (1 1 0 1 0)
                 CLEAR_CHAR_TASKS player_actor
@@ -472,7 +346,7 @@ in_air_zip_to_buidling:
                 GOSUB destroyTwoWebs
                 RETURN
             ENDIF
-
+            */
             IF timera > 4000
                 GOSUB destroyWeb
                 CLEAR_CHAR_TASKS player_actor
@@ -977,7 +851,7 @@ loadTextures:
     //LOAD_SPRITE tCrosshair "crosshair"
 RETURN
 
-is_not_player_playing_swing_anims:
+is_not_player_playing_anims:
     IF NOT IS_CHAR_PLAYING_ANIM player_actor ("swing_L_A")
     AND NOT IS_CHAR_PLAYING_ANIM player_actor ("swing_L_B")
     AND NOT IS_CHAR_PLAYING_ANIM player_actor ("swing_L_C")
@@ -992,9 +866,54 @@ is_not_player_playing_swing_anims:
         AND NOT IS_CHAR_PLAYING_ANIM player_actor ("swing_R_E")
         AND NOT IS_CHAR_PLAYING_ANIM player_actor ("swing_R_F")
 
-            RETURN_TRUE
-            RETURN
+            IF NOT IS_CHAR_PLAYING_ANIM player_actor ("webZip_A")
+            AND NOT IS_CHAR_PLAYING_ANIM player_actor ("webZip_A_R")
+            AND NOT IS_CHAR_PLAYING_ANIM player_actor ("webZip_B")
+            AND NOT IS_CHAR_PLAYING_ANIM player_actor ("webZip_B_R")
+            AND NOT IS_CHAR_PLAYING_ANIM player_actor ("jump_wall_top_C")
+
+                IF NOT IS_CHAR_PLAYING_ANIM player_actor ("wall_idle_A")
+                AND NOT IS_CHAR_PLAYING_ANIM player_actor ("wall_idle_B")
+                AND NOT IS_CHAR_PLAYING_ANIM player_actor ("walk_wall")
+                AND NOT IS_CHAR_PLAYING_ANIM player_actor ("run_wall")
+                AND NOT IS_CHAR_PLAYING_ANIM player_actor ("jump_wall_top_A")
+                AND NOT IS_CHAR_PLAYING_ANIM player_actor ("jump_wall_top_B")
+                    
+                    IF NOT IS_CHAR_PLAYING_ANIM player_actor ("run_wall_jump_R_A")
+                    AND NOT IS_CHAR_PLAYING_ANIM player_actor ("run_wall_jump_L_A")
+                    AND NOT IS_CHAR_PLAYING_ANIM player_actor ("run_wall_R_A")
+                    AND NOT IS_CHAR_PLAYING_ANIM player_actor ("run_wall_R_B")
+                    AND NOT IS_CHAR_PLAYING_ANIM player_actor ("run_wall_L_A")
+                    AND NOT IS_CHAR_PLAYING_ANIM player_actor ("run_wall_L_B")
+
+                        IF NOT IS_CHAR_PLAYING_ANIM player_actor ("walk_wall_B")
+                        AND NOT IS_CHAR_PLAYING_ANIM player_actor ("wall_idle_C")
+                        AND NOT IS_CHAR_PLAYING_ANIM player_actor ("wall_idle_D")
+                        AND NOT IS_CHAR_PLAYING_ANIM player_actor ("walkWallToIdle")
+                        AND NOT IS_CHAR_PLAYING_ANIM player_actor ("idleToWalkWall_B")
+                        AND NOT IS_CHAR_PLAYING_ANIM player_actor ("walkBWallToIdle")
+
+                            IF NOT IS_CHAR_PLAYING_ANIM player_actor ("idleToWalkWall")
+                            AND NOT IS_CHAR_PLAYING_ANIM player_actor ("wall_jump_fall")
+                            AND NOT IS_CHAR_PLAYING_ANIM player_actor ("t_tower_A")
+
+                                IF NOT IS_CHAR_PLAYING_ANIM player_actor ("groundToLampA")
+                                AND NOT IS_CHAR_PLAYING_ANIM player_actor ("airToLampA")
+                                AND NOT IS_CHAR_PLAYING_ANIM player_actor ("airToLampB")
+                                AND NOT IS_CHAR_PLAYING_ANIM player_actor ("airToLampB_B")   
+                                AND NOT IS_CHAR_PLAYING_ANIM player_actor ("groundToLampB")  
+                                AND NOT IS_CHAR_PLAYING_ANIM player_actor ("groundToLampD")   
+
+                                    RETURN_TRUE
+                                    RETURN
+                                ENDIF
+                            ENDIF
+                        ENDIF
+                    ENDIF
+                ENDIF
+            ENDIF    
         ENDIF
+
     ENDIF
     RETURN_FALSE
 RETURN
@@ -1033,363 +952,6 @@ does_skill_Point_Launch_enabled:
         RETURN_FALSE
     ENDIF
 RETURN
-
-is_sf_model_id_allowed:
-    IF idModel = 9929
-    OR idModel = 10194
-    OR idModel = 10195 
-    OR idModel = 10193 
-    OR idModel = 1226
-    OR idModel = 10196 
-    OR idModel = 10197
-    OR idModel = 9908
-        RETURN_TRUE    // allowed to point launch
-        RETURN
-    ELSE
-        IF idModel = 9928
-        OR idModel = 9927
-        OR idModel = 9925
-        OR idModel = 9926
-        OR idModel = 9920
-        OR idModel = 9917
-        OR idModel = 10308
-        OR idModel = 9922        
-            RETURN_TRUE    // allowed to point launch
-            RETURN
-        ELSE
-            IF idModel = 10142
-            OR idModel = 9921
-            OR idModel = 10101
-            OR idModel = 10052
-            OR idModel = 9919
-            OR idModel = 9924
-            OR idModel = 9906
-            //OR idModel = 
-                RETURN_TRUE    // allowed to point launch
-                RETURN
-            ELSE
-
-                IF idModel = 9923
-                OR idModel = 9916
-                OR idModel = 9918
-                OR idModel = 9907
-                OR idModel = 9953
-                OR idModel = 10143
-                OR idModel = 9949
-                OR idModel = 9911
-                    RETURN_TRUE    // allowed to point launch
-                    RETURN
-                ELSE
-                    IF idModel = 10049
-                    OR idModel = 10289
-                    OR idModel = 10080
-                    OR idModel = 9931
-                    OR idModel = 9951
-                    OR idModel = 10041
-                    OR idModel = 10063
-                    OR idModel = 10045
-                        RETURN_TRUE    // allowed to point launch
-                        RETURN
-                    ELSE
-                        IF idModel = 9952
-                        OR idModel = 10280
-                        OR idModel = 10300
-                        OR idModel = 9957
-                        OR idModel = 9910
-                        OR idModel = 9947
-                        OR idModel = 9914
-                        OR idModel = 10060
-                            RETURN_TRUE    // allowed to point launch
-                            RETURN
-                        ELSE
-
-                            IF idModel = 9901
-                            OR idModel = 9902
-                            OR idModel = 9912
-                            OR idModel = 10046
-                            OR idModel = 10306
-                            OR idModel = 9913
-                            OR idModel = 10086
-                            OR idModel = 10017
-                                RETURN_TRUE    // allowed to point launch
-                                RETURN
-                            ELSE
-                                IF idModel = 10056
-                                OR idModel = 10288
-                                OR idModel = 10020
-                                OR idModel = 10028
-                                OR idModel = 10287
-                                OR idModel = 10019
-                                OR idModel = 10022
-                                OR idModel = 10021
-                                    RETURN_TRUE    // allowed to point launch
-                                    RETURN  
-                                ELSE
-                                    IF idModel = 10048
-                                    OR idModel = 9903
-                                    OR idModel = 9950
-                                    OR idModel = 10084
-                                    OR idModel = 10027
-                                    OR idModel = 10050
-                                    OR idModel = 10014
-                                    OR idModel = 10053
-                                        RETURN_TRUE    // allowed to point launch
-                                        RETURN  
-                                    ELSE
-                                        IF idModel = 10188
-                                        OR idModel = 10055
-                                        OR idModel = 10013
-                                        OR idModel = 10016
-                                        OR idModel = 10871
-                                        OR idModel = 10187
-                                        OR idModel = 10278
-                                        OR idModel = 10189
-                                            RETURN_TRUE    // allowed to point launch
-                                            RETURN
-                                        ELSE
-
-                                            IF idModel = 10025
-                                            OR idModel = 10043
-                                            OR idModel = 10054
-                                            OR idModel = 10035
-                                            OR idModel = 10038
-                                            OR idModel = 10037
-                                            OR idModel = 10030
-                                            OR idModel = 10039
-                                                RETURN_TRUE    // allowed to point launch
-                                                RETURN
-                                            ELSE
-                                                IF idModel = 10031
-                                                OR idModel = 10950
-                                                OR idModel = 9595
-                                                OR idModel = 9599
-                                                OR idModel = 10951
-                                                OR idModel = 10925
-                                                OR idModel = 10948
-                                                OR idModel = 10946
-                                                    RETURN_TRUE    // allowed to point launch
-                                                    RETURN
-                                                ELSE
-                                                    IF idModel = 10949
-                                                    OR idModel = 10952
-                                                    OR idModel = 10953
-                                                    OR idModel = 10947
-                                                    OR idModel = 3805
-                                                    OR idModel = 3813
-                                                    OR idModel = 3804
-                                                    OR idModel = 9494
-                                                        RETURN_TRUE    // allowed to point launch
-                                                        RETURN
-                                                    ELSE
-                                                        IF idModel = 10619
-                                                        OR idModel = 9523
-                                                        OR idModel = 9573
-                                                        OR idModel = 9740
-                                                        OR idModel = 9739
-                                                        OR idModel = 11317
-                                                        OR idModel = 10610
-                                                        OR idModel = 10412
-                                                            RETURN_TRUE    // allowed to point launch
-                                                            RETURN
-                                                        ELSE
-                                                            IF idModel = 10975
-                                                            OR idModel = 10977
-                                                            OR idModel = 10978
-                                                            OR idModel = 9738
-                                                            OR idModel = 9948
-                                                            OR idModel = 10626
-                                                            OR idModel = 10621
-                                                            OR idModel = 1365
-                                                                RETURN_TRUE
-                                                                RETURN
-                                                            ELSE
-
-                                                                IF idModel = 10980
-                                                                OR idModel = 9834
-                                                                OR idModel = 9894
-                                                                OR idModel = 9764
-                                                                OR idModel = 10627
-                                                                OR idModel = 9524
-                                                                OR idModel = 9763
-                                                                OR idModel = 10979
-                                                                    RETURN_TRUE
-                                                                    RETURN
-                                                                ELSE
-                                                                    IF idModel = 11244
-                                                                    OR idModel = 10624
-                                                                    OR idModel = 9741
-                                                                    OR idModel = 10988
-                                                                    OR idModel = 10989
-                                                                    OR idModel = 10625
-                                                                    OR idModel = 9742
-                                                                    OR idModel = 11008
-                                                                        RETURN_TRUE
-                                                                        RETURN
-                                                                    ELSE
-                                                                        IF idModel = 9765
-                                                                        OR idModel = 10633
-                                                                        OR idModel = 11000
-                                                                        OR idModel = 9547
-                                                                        OR idModel = 9495
-                                                                        OR idModel = 10425
-                                                                        OR idModel = 9572
-                                                                        OR idModel = 10381
-                                                                            RETURN_TRUE
-                                                                            RETURN
-                                                                        ELSE
-
-                                                                            IF idModel = 10423
-                                                                            OR idModel = 9499
-                                                                            OR idModel = 9737
-                                                                            OR idModel = 9501
-                                                                            OR idModel = 3826
-                                                                            OR idModel = 3828
-                                                                            OR idModel = 9497
-                                                                            OR idModel = 3843
-                                                                                RETURN_TRUE
-                                                                                RETURN
-                                                                            ELSE
-                                                                                IF idModel = 3844
-                                                                                OR idModel = 10628
-                                                                                OR idModel = 9496
-                                                                                OR idModel = 10775
-                                                                                OR idModel = 10631
-                                                                                OR idModel = 10435
-                                                                                OR idModel = 3824
-                                                                                OR idModel = 10430
-                                                                                    RETURN_TRUE
-                                                                                    RETURN
-                                                                                ELSE
-                                                                                    IF idModel = 3845
-                                                                                    OR idModel = 3830
-                                                                                    OR idModel = 10630
-                                                                                    OR idModel = 10447
-                                                                                    OR idModel = 3820
-                                                                                    OR idModel = 10773
-                                                                                    OR idModel = 3842
-                                                                                    OR idModel = 3827
-                                                                                        RETURN_TRUE
-                                                                                        RETURN
-                                                                                    ELSE
-
-                                                                                        IF idModel = 3823      
-                                                                                        OR idModel = 10634
-                                                                                        OR idModel = 10391
-                                                                                        OR idModel = 10369       
-                                                                                        OR idModel = 10722
-                                                                                        OR idModel = 10392
-                                                                                        OR idModel = 11001
-                                                                                        OR idModel = 10439
-                                                                                            RETURN_TRUE
-                                                                                            RETURN
-                                                                                        ELSE    
-                                                                                            IF idModel = 10376
-                                                                                            OR idModel = 10377
-                                                                                            OR idModel = 10981
-                                                                                            OR idModel = 10991
-                                                                                            OR idModel = 10434
-                                                                                            OR idModel = 11326
-                                                                                            OR idModel = 11093
-                                                                                            OR idModel = 10393
-                                                                                                RETURN_TRUE
-                                                                                                RETURN
-                                                                                            ELSE
-
-                                                                                                IF idModel = 10432
-                                                                                                OR idModel = 10999
-                                                                                                OR idModel = 10996
-                                                                                                OR idModel = 11092
-                                                                                                OR idModel = 10998
-                                                                                                OR idModel = 10431
-                                                                                                OR idModel = 9540
-                                                                                                OR idModel = 10997
-                                                                                                    RETURN_TRUE
-                                                                                                    RETURN
-                                                                                                ELSE
-                                                                                                    IF idModel = 11002
-                                                                                                    OR idModel = 10388
-                                                                                                    OR idModel = 10994
-                                                                                                    OR idModel = 11004
-                                                                                                    OR idModel = 10427
-                                                                                                    OR idModel = 10995
-                                                                                                    OR idModel = 10982
-                                                                                                    OR idModel = 10993
-                                                                                                        RETURN_TRUE
-                                                                                                        RETURN
-                                                                                                    ELSE
-
-                                                                                                        IF idModel = 10945
-                                                                                                        OR idModel = 11015
-                                                                                                        OR idModel = 11010
-                                                                                                        OR idModel = 9895
-                                                                                                        OR idModel = 9502
-                                                                                                        OR idModel = 9503
-                                                                                                        OR idModel = 9516
-                                                                                                        OR idModel = 9765
-                                                                                                            RETURN_TRUE
-                                                                                                            RETURN
-                                                                                                        ELSE
-                                                                                                            IF idModel = 9593
-                                                                                                            OR idModel = 9835
-                                                                                                            OR idModel = 9529
-                                                                                                            OR idModel = 10990
-                                                                                                            OR idModel = 10390
-                                                                                                            OR idModel = 10428
-                                                                                                            OR idModel = 10429
-                                                                                                            OR idModel = 10368
-                                                                                                                RETURN_TRUE
-                                                                                                                RETURN
-                                                                                                            ELSE
-                                                                                                                IF idModel = 3829
-                                                                                                                OR idModel = 10398
-                                                                                                                OR idModel = 10383
-                                                                                                                OR idModel = 10380
-                                                                                                                OR idModel = 10379
-                                                                                                                OR idModel = 9834
-                                                                                                                OR idModel = 9504
-                                                                                                                OR idModel = 9513
-                                                                                                                    RETURN_TRUE
-                                                                                                                    RETURN
-                                                                                                                ELSE
-                                                                                                                    IF idModel = 10044
-                                                                                                                        RETURN_TRUE
-                                                                                                                        RETURN
-                                                                                                                    ELSE
-                                                                                                                        RETURN_FALSE
-                                                                                                                    ENDIF
-                                                                                                                ENDIF
-                                                                                                            ENDIF
-                                                                                                        ENDIF
-                                                                                                    ENDIF
-                                                                                                ENDIF
-                                                                                            ENDIF
-                                                                                        ENDIF
-                                                                                    ENDIF
-                                                                                ENDIF
-
-                                                                            ENDIF
-                                                                        ENDIF
-                                                                    ENDIF
-                                                                ENDIF
-                                                            ENDIF
-                                                        ENDIF
-                                                    ENDIF
-
-                                                ENDIF
-                                            ENDIF
-                                        ENDIF
-                                    ENDIF
-
-                                ENDIF
-                            ENDIF
-                        ENDIF
-                    ENDIF
-
-                ENDIF
-            ENDIF
-        ENDIF
-    ENDIF
-RETURN        
 
 //-+----------------------------------------------------------
 
@@ -1645,121 +1207,6 @@ isClearInSightGroundSphereRays:
 
 CLEO_RETURN 0
 }
-
-{
-//CLEO_CALL getXYZAimCoords 0 scplayer fRange fZPoint (x y z) (x2 y2 z2) fVar
-getXYZAimCoords:
-    LVAR_INT scplayer   //in
-    LVAR_FLOAT range fZPoint  //in
-    LVAR_FLOAT fromX fromY fromZ
-    LVAR_FLOAT camX camY camZ pointX pointY pointZ angleZ
-    LVAR_INT var1 var2 i j k
-    LVAR_FLOAT resultX resultY resultZ x y z
-    LVAR_FLOAT x2 y2 z2 outputX outputY outputZ
-
-    IF DOES_CHAR_EXIST scplayer
-        GET_CHAR_COORDINATES scplayer (fromX fromY fromZ)
-        GET_VAR_POINTER (camX) (var1)
-        GET_VAR_POINTER (pointX) (var2)
-        CALL_METHOD 0x514970 /*struct*/0xB6F028 /*params*/6 /*pop*/0 /*pPoint*/var2 /*pCam*/var1 /*fZ*/fromZ /*fY*/fromY /*fX*/fromX /*fRange*/ range
-        pointZ += fZPoint
-        GET_PLAYER_CHAR 0 scplayer
-        GET_PED_POINTER scplayer (i)
-        GET_LABEL_POINTER ColPoint j
-        IF GET_COLLISION_BETWEEN_POINTS (camX camY camZ) (pointX pointY pointZ) TRUE FALSE FALSE FALSE FALSE FALSE TRUE TRUE i j (resultX resultY resultZ i)
-            /*
-            GET_ENTITY_TYPE i (k)
-            IF k = ENTITY_TYPE_BUILDING
-                GET_COLPOINT_NORMAL_VECTOR j x y z
-                x *= 10.0
-                y *= 10.0
-                z *= 10.0
-                CLEO_RETURN 0 resultX resultY resultZ x y z
-            ENDIF
-            */
-
-            //my code (didn't work as I expected :( )
-            GET_ENTITY_TYPE i (k)
-            IF k = ENTITY_TYPE_BUILDING    
-                GET_COLPOINT_NORMAL_VECTOR j x y z
-                x *= 10.0
-                y *= 10.0
-                z *= 10.0
-                //IF CLEO_CALL isClearInSight 0 scplayer (0.0 5.0 1.5) (1 0 0 0 0)    //Front
-                IF CLEO_CALL isClearInSight 0 scplayer (10.0 20.5 5.5) (1 0 0 1 0)
-                    CLEO_RETURN 0 resultX resultY resultZ x y z
-                ENDIF
-            ENDIF             
-
-        ELSE
-            resultX = pointX
-            resultY = pointY
-            resultZ = pointZ
-        ENDIF
-    ENDIF
-CLEO_RETURN 0 resultX resultY resultZ 0.0 0.0 0.0 
-}
-{
-//CLEO_CALL get_building_id 0 scplayer fRange fZPoint (idModel)
-get_building_id:
-    LVAR_INT scplayer   //in
-    LVAR_FLOAT range fZPoint  //in
-    LVAR_FLOAT fromX fromY fromZ
-    LVAR_FLOAT camX camY camZ pointX pointY pointZ
-    LVAR_INT var1 var2 i j pBuffer k idModel
-    LVAR_FLOAT resultX resultY resultZ x y z
-    LVAR_FLOAT x2 y2 z2 outputX outputY outputZ
-
-    IF DOES_CHAR_EXIST scplayer
-
-        GET_CHAR_COORDINATES scplayer (fromX fromY fromZ)
-
-        GET_VAR_POINTER (camX) (var1)
-        GET_VAR_POINTER (pointX) (var2)
-
-        CALL_METHOD 0x514970 /*struct*/0xB6F028 /*params*/6 /*pop*/0 /*pPoint*/var2 /*pCam*/var1 /*fZ*/fromZ /*fY*/fromY /*fX*/fromX /*fRange*/ range
-        pointZ += fZPoint
-
-        GET_LABEL_POINTER ColPoint j
-        IF GET_COLLISION_BETWEEN_POINTS (camX camY camZ) (pointX pointY pointZ) TRUE FALSE FALSE TRUE FALSE FALSE FALSE FALSE -1 j (fromX fromY fromZ i)
-
-            //my code (didn't work as I expected :( )
-            IF NOT i = -1
-
-                GET_LABEL_POINTER Buffer pBuffer
-                READ_STRUCT_OFFSET i 0x22 2 (var1)
-                STRING_FORMAT pBuffer "%i" var1
-                WRITE_CLIPBOARD_DATA_FROM pBuffer 16
-                
-                //PRINT_FORMATTED_NOW "Copied ID:~y~ %s" 2000 $pBuffer   
-
-                READ_CLIPBOARD_DATA_TO pBuffer 32
-                SCAN_STRING $pBuffer "%i" i (var2)                             
-                //PRINT_FORMATTED_NOW "Copied ID :~y~ %i" 1 var2
-            ENDIF  
-
-        ENDIF
-    ENDIF
-CLEO_RETURN 0 var2
-}
-{
-//CLEO_CALL idModelExist 0 (idModel)
-idModelExist:    
-    LVAR_INT iModelId //In
-    LVAR_INT iModelIdLimit
-
-    IF iModelId > 0
-        READ_MEMORY 0x40885A 4 TRUE (iModelIdLimit)
-        IF iModelId < iModelIdLimit
-            IF IS_MODEL_AVAILABLE iModelId
-                RETURN_TRUE
-                CLEO_RETURN 0 ()
-            ENDIF
-        ENDIF
-    ENDIF
-    RETURN_FALSE
-CLEO_RETURN 0
-}
 {
 //CLEO_CALL get_distance_between_coordinates 0 player_actor x y z fDistance    
 get_distance_between_coordinates:
@@ -1908,6 +1355,464 @@ get_object_near_char:
 CLEO_RETURN 0 iNewObj
 }
 
+{
+find_edge_target:
+LVAR_INT player_actor           // input (must be the first declared local)
+LVAR_INT ignorePtr colPointPtr ent
+LVAR_INT found ok dirIdx
+
+LVAR_FLOAT camX camY camZ       // camera origin, kept for line-of-sight tests
+LVAR_FLOAT hitX hitY hitZ       // camera-ray hit, then the roof point we scan from
+LVAR_FLOAT dirX dirY            // current scan direction (horizontal, length 1)
+LVAR_FLOAT scanT bestDist       // distance along current scan / best edge distance so far
+LVAR_FLOAT edgeX edgeY edgeZ    // last solid roof point of the current scan
+LVAR_FLOAT bestX bestY bestZ    // best valid edge point found this frame
+LVAR_FLOAT pX pY pZ qZ          // scratch
+LVAR_FLOAT tmpA tmpB tmpC       // scratch
+LVAR_FLOAT playerZ              // player height, for the height limit
+
+GET_PED_POINTER player_actor ignorePtr
+GET_LABEL_POINTER ColPoint colPointPtr
+
+GOSUB find_target
+CLEO_RETURN 0 (found bestX bestY bestZ)
+
+
+// =========================================================
+// find_target
+// Sets found = 1 and bestX/Y/Z (edge point on the roof) on success.
+// =========================================================
+find_target:
+    found = 0
+
+    // Camera ray (40 m along the view direction)
+    GET_OFFSET_FROM_CAMERA_IN_WORLD_COORDS 0.0 0.0 0.0 (camX camY camZ)
+    GET_OFFSET_FROM_CAMERA_IN_WORLD_COORDS 0.0 40.0 0.0 (pX pY pZ)
+
+    IF NOT GET_COLLISION_BETWEEN_POINTS (camX camY camZ) (pX pY pZ) TRUE FALSE FALSE FALSE FALSE TRUE TRUE TRUE ignorePtr colPointPtr (hitX hitY hitZ ent)
+        RETURN
+    ENDIF
+
+    // Read the surface normal immediately (the colpoint buffer is reused by later rays)
+    GET_COLPOINT_NORMAL_VECTOR colPointPtr tmpA tmpB tmpC
+
+    // Horizontal direction pointing from the target back toward the camera,
+    // normalised to length 1 so every step is the same size at any camera pitch.
+    dirX = camX
+    dirX -= pX
+    dirY = camY
+    dirY -= pY
+    GET_DISTANCE_BETWEEN_COORDS_2D 0.0 0.0 dirX dirY scanT
+    IF scanT < 0.01
+        RETURN
+    ENDIF
+    dirX /= scanT
+    dirY /= scanT
+
+    // HARD RANGE LIMIT: the camera-ray hit must be within 20 m of the PLAYER.
+    GET_CHAR_COORDINATES player_actor pX pY pZ
+    playerZ = pZ
+    GET_DISTANCE_BETWEEN_COORDS_3D pX pY pZ hitX hitY hitZ scanT
+    IF scanT > 20.0
+        RETURN
+    ENDIF
+
+    ok = 0
+
+    IF tmpC > 0.65
+        // Direct hit on a roof / ground-like surface: scan from the hit itself.
+        // Ignore hits right at the player's feet.
+        GET_DISTANCE_BETWEEN_COORDS_2D pX pY hitX hitY scanT
+        IF scanT > 1.5
+            ok = 1
+        ENDIF
+    ELSE
+        // Wall hit. Use the wall's own horizontal normal as the scan basis so the
+        // scans run square to the wall instead of along the camera direction.
+        GET_DISTANCE_BETWEEN_COORDS_2D 0.0 0.0 tmpA tmpB scanT
+        IF scanT > 0.2
+            tmpA /= scanT
+            tmpB /= scanT
+
+            // Make sure the normal faces the camera side
+            pX = tmpA
+            pX *= dirX
+            pY = tmpB
+            pY *= dirY
+            pX += pY
+            IF pX < 0.0
+                tmpA *= -1.0
+                tmpB *= -1.0
+            ENDIF
+
+            dirX = tmpA
+            dirY = tmpB
+        ENDIF
+
+        // Find the roof by dropping a ray from 80 m above a point just INSIDE the wall.
+        // (The old script started at the wall plane itself, where the ray runs along
+        //  the wall surface and hits or misses unpredictably.)
+        scanT = 0.5
+        WHILE scanT < 2.1
+            pX = dirX
+            pX *= scanT
+            pX *= -1.0
+            pX += hitX
+            pY = dirY
+            pY *= scanT
+            pY *= -1.0
+            pY += hitY
+            pZ = hitZ
+            pZ += 80.0
+            qZ = hitZ
+            qZ -= 1.0
+
+            IF GET_COLLISION_BETWEEN_POINTS (pX pY pZ) (pX pY qZ) TRUE FALSE FALSE FALSE FALSE TRUE TRUE TRUE ignorePtr colPointPtr (tmpA tmpB tmpC ent)
+                GET_COLPOINT_NORMAL_VECTOR colPointPtr tmpA tmpB qZ
+                IF qZ > 0.65
+                    hitX = pX
+                    hitY = pY
+                    hitZ = tmpC
+                    ok = 1
+                    scanT = 99.0
+                ENDIF
+            ENDIF
+
+            scanT += 0.5
+        ENDWHILE
+    ENDIF
+
+    IF ok = 0
+        RETURN
+    ENDIF
+
+    // HEIGHT LIMIT: the roof / ledge may be at most 15 m above the player.
+    pZ = hitZ
+    pZ -= playerZ
+    IF pZ > 10.0
+        RETURN
+    ENDIF
+
+    // Scan for the nearest valid roof edge in four directions:
+    // toward the camera side, then rotating 90 degrees each time.
+    bestDist = 3.0
+    dirIdx = 0
+    WHILE dirIdx < 4
+        GOSUB scan_direction
+
+        // rotate (x, y) -> (y, -x)
+        tmpA = dirX
+        dirX = dirY
+        dirY = tmpA
+        dirY *= -1.0
+
+        dirIdx += 1
+    ENDWHILE
+RETURN
+
+
+// =========================================================
+// scan_direction
+// Walks from the roof point (hitX/Y/Z) along (dirX, dirY) in 0.25 m steps.
+// Each step drops a short vertical ray from the height of the last solid point,
+// so gently sloping roofs are followed instead of being read as an edge.
+// The first step with no roof under it marks the edge.
+// Only edges closer than bestDist are considered.
+// =========================================================
+scan_direction:
+    edgeX = hitX
+    edgeY = hitY
+    edgeZ = hitZ
+    scanT = 0.25
+
+    WHILE scanT < bestDist
+        pX = dirX
+        pX *= scanT
+        pX += hitX
+        pY = dirY
+        pY *= scanT
+        pY += hitY
+        pZ = edgeZ
+        pZ += 1.0
+        qZ = edgeZ
+        qZ -= 0.75
+
+        IF GET_COLLISION_BETWEEN_POINTS (pX pY pZ) (pX pY qZ) TRUE FALSE FALSE FALSE FALSE TRUE TRUE TRUE ignorePtr colPointPtr (tmpA tmpB tmpC ent)
+            // Roof continues here
+            edgeX = pX
+            edgeY = pY
+            edgeZ = tmpC
+            scanT += 0.25
+        ELSE
+            // No roof here: the edge is between the last solid point and this step
+            GOSUB validate_edge
+            IF ok = 1
+                bestDist = scanT
+                bestX = edgeX
+                bestY = edgeY
+                bestZ = edgeZ
+                found = 1
+            ENDIF
+            scanT = 99.0
+        ENDIF
+    ENDWHILE
+RETURN
+
+
+// =========================================================
+// validate_edge
+// Sets ok = 1 if the edge point (edgeX/Y/Z) is usable.
+// =========================================================
+validate_edge:
+    ok = 0
+
+    // (0) Open space on both sides of the edge. A real roof edge has air just
+    //     past it, and clear space behind it to stand in. A wall, fence or object
+    //     in either zone means this is not a usable edge (e.g. the ground running
+    //     into a wall, or a ledge with a fence set back from it).
+    //     Each zone is checked at knee and chest height.
+    //
+    //     Beyond the edge: 1.25 m
+    pX = dirX
+    pX *= 1.25
+    pX += edgeX
+    pY = dirY
+    pY *= 1.25
+    pY += edgeY
+
+    pZ = edgeZ
+    pZ += 0.4
+    IF GET_COLLISION_BETWEEN_POINTS (edgeX edgeY pZ) (pX pY pZ) TRUE FALSE FALSE TRUE TRUE FALSE FALSE FALSE ignorePtr colPointPtr (tmpA tmpB tmpC ent)
+        RETURN
+    ENDIF
+
+    pZ = edgeZ
+    pZ += 1.2
+    IF GET_COLLISION_BETWEEN_POINTS (edgeX edgeY pZ) (pX pY pZ) TRUE FALSE FALSE TRUE TRUE FALSE FALSE FALSE ignorePtr colPointPtr (tmpA tmpB tmpC ent)
+        RETURN
+    ENDIF
+
+    //     Behind the edge, back toward the aim point: 1.5 m
+    pX = dirX
+    pX *= -1.5
+    pX += edgeX
+    pY = dirY
+    pY *= -1.5
+    pY += edgeY
+
+    pZ = edgeZ
+    pZ += 0.6
+    IF GET_COLLISION_BETWEEN_POINTS (edgeX edgeY pZ) (pX pY pZ) TRUE FALSE FALSE TRUE TRUE FALSE FALSE FALSE ignorePtr colPointPtr (tmpA tmpB tmpC ent)
+        RETURN
+    ENDIF
+
+    pZ = edgeZ
+    pZ += 1.4
+    IF GET_COLLISION_BETWEEN_POINTS (edgeX edgeY pZ) (pX pY pZ) TRUE FALSE FALSE TRUE TRUE FALSE FALSE FALSE ignorePtr colPointPtr (tmpA tmpB tmpC ent)
+        RETURN
+    ENDIF
+
+    // (1) Line of sight from the camera to a point 1.5 m above the edge,
+    //     stopping 5% short so the edge itself never counts as an obstruction.
+    //     Uses strict flags, so chain-link fences block the view too.
+    pX = edgeX
+    pX -= camX
+    pX *= 0.95
+    pX += camX
+    pY = edgeY
+    pY -= camY
+    pY *= 0.95
+    pY += camY
+    pZ = edgeZ
+    pZ += 1.5
+    pZ -= camZ
+    pZ *= 0.95
+    pZ += camZ
+
+    IF GET_COLLISION_BETWEEN_POINTS (camX camY camZ) (pX pY pZ) TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE ignorePtr colPointPtr (tmpA tmpB tmpC ent)
+        RETURN
+    ENDIF
+
+    // (2) Reject ground bumps / low ledges: probe 2 m beyond the edge;
+    //     a surface within 2.5 m below the edge means it isn't a real drop.
+    pX = dirX
+    pX *= 2.0
+    pX += edgeX
+    pY = dirY
+    pY *= 2.0
+    pY += edgeY
+    pZ = edgeZ
+    pZ += 0.75
+    qZ = edgeZ
+    qZ -= 2.5
+
+    IF GET_COLLISION_BETWEEN_POINTS (pX pY pZ) (pX pY qZ) TRUE FALSE FALSE FALSE FALSE TRUE TRUE TRUE ignorePtr colPointPtr (tmpA tmpB tmpC ent)
+        RETURN
+    ENDIF
+
+    // (3) Standing space. The landing point is moved 0.35 m back from the edge
+    //     (onto the roof) and the player's footprint is tested there: the centre
+    //     plus a ring of 8 points 0.3 m out (about the width of a ped).
+    //     Every point needs floor under it, head room above it, and a clear
+    //     path from the centre. A railing top that is too thin, or a spot
+    //     with a fence on it, fails this.
+    pX = dirX
+    pX *= 0.35
+    edgeX -= pX
+    pY = dirY
+    pY *= 0.35
+    edgeY -= pY
+
+    // Floor under the landing point; its height becomes the landing height
+    pZ = edgeZ
+    pZ += 0.75
+    qZ = edgeZ
+    qZ -= 0.75
+    IF NOT GET_COLLISION_BETWEEN_POINTS (edgeX edgeY pZ) (edgeX edgeY qZ) TRUE FALSE FALSE TRUE TRUE FALSE FALSE FALSE ignorePtr colPointPtr (tmpA tmpB tmpC ent)
+        RETURN
+    ENDIF
+    edgeZ = tmpC
+
+    // Centre, then 4 axis points, then 4 diagonal points
+    tmpB = 0.0
+    tmpC = 0.0
+    GOSUB check_offset
+    IF ok = 0
+        RETURN
+    ENDIF
+
+    tmpB = 0.3
+    tmpC = 0.0
+    GOSUB check_offset
+    IF ok = 0
+        RETURN
+    ENDIF
+
+    tmpB = -0.3
+    tmpC = 0.0
+    GOSUB check_offset
+    IF ok = 0
+        RETURN
+    ENDIF
+
+    tmpB = 0.0
+    tmpC = 0.3
+    GOSUB check_offset
+    IF ok = 0
+        RETURN
+    ENDIF
+
+    tmpB = 0.0
+    tmpC = -0.3
+    GOSUB check_offset
+    IF ok = 0
+        RETURN
+    ENDIF
+
+    tmpB = 0.21
+    tmpC = 0.21
+    GOSUB check_offset
+    IF ok = 0
+        RETURN
+    ENDIF
+
+    tmpB = 0.21
+    tmpC = -0.21
+    GOSUB check_offset
+    IF ok = 0
+        RETURN
+    ENDIF
+
+    tmpB = -0.21
+    tmpC = 0.21
+    GOSUB check_offset
+    IF ok = 0
+        RETURN
+    ENDIF
+
+    tmpB = -0.21
+    tmpC = -0.21
+    GOSUB check_offset
+    IF ok = 0
+        RETURN
+    ENDIF
+
+    ok = 1
+RETURN
+
+
+// =========================================================
+// check_offset
+// tmpB = metres along the scan direction, tmpC = metres to the side.
+// Tests that spot of the footprint (relative to the landing centre).
+// =========================================================
+check_offset:
+    pX = dirX
+    pX *= tmpB
+    pY = dirY
+    pY *= tmpB
+    pZ = dirY
+    pZ *= tmpC
+    pX -= pZ
+    pZ = dirX
+    pZ *= tmpC
+    pY += pZ
+    pX += edgeX
+    pY += edgeY
+    GOSUB check_point
+RETURN
+
+
+// =========================================================
+// check_point
+// pX/pY = a point of the player's footprint. Sets ok = 1 if it has floor,
+// head room, and a clear path from the landing centre (edgeX/Y).
+// These rays use stricter flags than the camera rays: see-through,
+// camera-ignore and shoot-through surfaces (chain-link fences) are NOT skipped,
+// and objects/dummies count as obstacles.
+// =========================================================
+check_point:
+    ok = 0
+
+    // Floor
+    pZ = edgeZ
+    pZ += 0.5
+    qZ = edgeZ
+    qZ -= 0.5
+    IF NOT GET_COLLISION_BETWEEN_POINTS (pX pY pZ) (pX pY qZ) TRUE FALSE FALSE TRUE TRUE FALSE FALSE FALSE ignorePtr colPointPtr (tmpA tmpB tmpC ent)
+        RETURN
+    ENDIF
+
+    // Head room (player is about 1.8 m tall)
+    pZ = edgeZ
+    pZ += 0.5
+    qZ = edgeZ
+    qZ += 1.9
+    IF GET_COLLISION_BETWEEN_POINTS (pX pY pZ) (pX pY qZ) TRUE FALSE FALSE TRUE TRUE FALSE FALSE FALSE ignorePtr colPointPtr (tmpA tmpB tmpC ent)
+        RETURN
+    ENDIF
+
+    // Nothing between the centre and this point at knee and chest height
+    // (skipped for the centre itself)
+    GET_DISTANCE_BETWEEN_COORDS_2D edgeX edgeY pX pY tmpA
+    IF tmpA > 0.1
+        pZ = edgeZ
+        pZ += 0.6
+        IF GET_COLLISION_BETWEEN_POINTS (edgeX edgeY pZ) (pX pY pZ) TRUE FALSE FALSE TRUE TRUE FALSE FALSE FALSE ignorePtr colPointPtr (tmpA tmpB tmpC ent)
+            RETURN
+        ENDIF
+
+        pZ = edgeZ
+        pZ += 1.4
+        IF GET_COLLISION_BETWEEN_POINTS (edgeX edgeY pZ) (pX pY pZ) TRUE FALSE FALSE TRUE TRUE FALSE FALSE FALSE ignorePtr colPointPtr (tmpA tmpB tmpC ent)
+            RETURN
+        ENDIF
+    ENDIF
+
+    ok = 1
+RETURN
+
+}
 
 {
 //CLEO_CALL GUI_DrawHelperText 0 /*pos*/(320.0 240.0) /*gxtId*/ -1 /*formatId*/ 1 /*left padding*/ 3.0 /*top padding*/ 1.0
@@ -1988,10 +1893,10 @@ ENDDUMP
 
 ColPoint:
 DUMP
-00 00 00 00 00 00 00 00 00 00 00 00 //12
-00 00 00 00 00 00 00 00 00 00 00 00 //24
-00 00 00 00 00 00 00 00 00 00 00 00 //36
-00 00 00 00 00 00 00 00             //44
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 //32
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 //64
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 //96
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 //128
 ENDDUMP
 
 //-+---CONSTANTS--------------------
