@@ -1453,7 +1453,7 @@ find_target:
     // HEIGHT LIMIT: the roof / ledge may be at most 15 m above the player.
     pZ = hitZ
     pZ -= playerZ
-    IF pZ > 10.0
+    IF pZ > 15.0
         RETURN
     ENDIF
 
