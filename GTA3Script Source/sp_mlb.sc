@@ -10,7 +10,7 @@ CONST_INT player 0
 
 SCRIPT_START
 {
-SCRIPT_NAME sp_ml
+SCRIPT_NAME sp_mlb
 WAIT 0
 WAIT 0
 WAIT 0
@@ -31,6 +31,9 @@ GOSUB loadTextures
 GET_TEXTURE_FROM_SPRITE objCrosshair rwCross
 WAIT 150
 USE_TEXT_COMMANDS TRUE
+
+iTempVar = 0
+SET_CLEO_SHARED_VAR varBuildingZip iTempVar
 
 start_check:
 GOSUB readVars
