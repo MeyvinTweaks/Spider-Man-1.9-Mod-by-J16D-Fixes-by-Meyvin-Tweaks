@@ -18,7 +18,7 @@ WAIT 0
 WAIT 0
 LVAR_INT player_actor toggleSpiderMod is_in_interior
 LVAR_INT iTempVar randomVal is_zip_to_building is_edge_available  
-LVAR_FLOAT xAngle zAngle x[3] y[3] z[3] v1 v2 rwAngle
+LVAR_FLOAT iTempVar2 xAngle zAngle x[3] y[3] z[3] v1 v2 rwAngle
 LVAR_FLOAT fDistance currentTime fCharSpeed
 LVAR_INT rwCross baseObject iWebActor iWebActorR sfx sfxB
 
@@ -237,11 +237,11 @@ RETURN
 in_air_zip_to_buidling:
     GOSUB destroyTwoWebs
     GOSUB createTwoWebs
-
+    //GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 0.0 (x[2] y[2] z[2])
     CLEAR_CHAR_TASKS player_actor
     CLEAR_CHAR_TASKS_IMMEDIATELY player_actor
     TASK_PLAY_ANIM_NON_INTERRUPTABLE player_actor ("airToLampA" "spider") 13.0 (0 1 1 1) -2
-    WAIT 0
+    WAIT 1
     SET_CHAR_ANIM_SPEED player_actor "airToLampA" 2.0
     WHILE IS_CHAR_PLAYING_ANIM player_actor ("airToLampA")
         GET_CHAR_ANIM_CURRENT_TIME player_actor ("airToLampA") (currentTime)
@@ -257,18 +257,11 @@ in_air_zip_to_buidling:
         IF DOES_OBJECT_EXIST baseObject
             SET_OBJECT_ROTATION baseObject xAngle 0.0 zAngle
         ENDIF
-
-        IF CLEO_CALL isClearInSight 0 player_actor (0.0 0.0 -2.0) (1 0 0 0 0)   //AIR
-        ELSE
-            //CLEAR_CHAR_TASKS player_actor
-            //CLEAR_CHAR_TASKS_IMMEDIATELY player_actor
-            WAIT 0
-            GOSUB destroyTwoWebs
-            RETURN
-        ENDIF
-
         WAIT 0
     ENDWHILE
+    IF DOES_OBJECT_EXIST baseObject    
+        SET_OBJECT_COLLISION baseObject FALSE  //fix camera&attach bug
+    ENDIF
 
     GENERATE_RANDOM_INT_IN_RANGE 0 3 (randomVal)
     GOSUB playWebSound
@@ -289,7 +282,7 @@ in_air_zip_to_buidling:
     ENDIF
 
     timera = 0
-            
+    //WHILE fDistance >= x[2]     //_distance              
     IF NOT LOCATE_CHAR_DISTANCE_TO_COORDINATES player_actor x[0] y[0] z[0] 1.5
 
         WHILE NOT LOCATE_CHAR_DISTANCE_TO_COORDINATES player_actor x[0] y[0] z[0] 1.5
@@ -338,24 +331,7 @@ in_air_zip_to_buidling:
             CLAMP_FLOAT fCharSpeed 35.0 60.0 (fCharSpeed)
             CLEO_CALL setCharVelocityTo 0 player_actor (x[0] y[0] z[0]) fCharSpeed
             //PRINT_FORMATTED_NOW "vel:%.1f" 1 fCharSpeed //DEBUG
-
-            /*
-            IF NOT IS_LINE_OF_SIGHT_CLEAR (x[1] y[1] z[1]) (x[0] y[0] z[0]) (1 1 0 1 0)
-            //CLEO_CALL isClearBetweenCoords 0 (x[1] y[1] z[1]) (x[0] y[0] z[0]) (1 1 0 1 0)
-                CLEAR_CHAR_TASKS player_actor
-                CLEAR_CHAR_TASKS_IMMEDIATELY player_actor
-                WAIT 0
-                GOSUB destroyTwoWebs
-                RETURN
-            ENDIF
-            */
-            IF timera > 4000
-                GOSUB destroyWeb
-                CLEAR_CHAR_TASKS player_actor
-                CLEAR_CHAR_TASKS_IMMEDIATELY player_actor                
-                RETURN
-            ENDIF 
-
+            
         ENDWHILE
     ENDIF
     GOSUB destroyTwoWebs
@@ -377,27 +353,26 @@ point_launch_air_building:
     WHILE IS_CHAR_PLAYING_ANIM player_actor ("groundToLampD")
         GET_CHAR_ANIM_CURRENT_TIME player_actor ("groundToLampD") (currentTime)
         IF currentTime >= 0.217     // frame 10/46
-            SET_CHAR_COLLISION player_actor TRUE
             BREAK
         ENDIF
         WAIT 0
     ENDWHILE
-    GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 1.0 (x[0] y[0] z[0])
-    SET_CHAR_COORDINATES_SIMPLE player_actor x[0] y[0] z[0]
-    WAIT 1
     CLEO_CALL setCharViewPointToCamera 0 player_actor
-    SET_CHAR_COLLISION player_actor TRUE
     y[2] = 0.75 //0.65  //2.0
     z[2] = 0.45 //0.45  //1.8
     fCharSpeed *= 1.25
-    CLAMP_FLOAT fCharSpeed 40.0 50.0 (fCharSpeed)
+    CLAMP_FLOAT fCharSpeed 40.0 50.0 (fCharSpeed)    
+    GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 2.0 (x[0] y[0] z[0])
+    SET_CHAR_COLLISION player_actor TRUE        
+    SET_CHAR_COORDINATES_SIMPLE player_actor x[0] y[0] z[0]
+    WAIT 10
     CLEO_CALL setCharVelocity 0 player_actor (0.0 y[2] z[2]) fCharSpeed
 
     randomVal = 1
     GOSUB playSFXSound
     WAIT 0
     WHILE IS_BUTTON_PRESSED PAD1 SQUARE  // ~k~~PED_JUMPING~
-        WAIT 1
+        WAIT 0
     ENDWHILE
 RETURN
 
@@ -545,12 +520,10 @@ on_ground_zip_to_point:
         ENDIF
         WAIT 0
     ENDWHILE                                                
-    GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 0.0 (x[1] y[1] z[1])
-    z[1] += 3.5
+    GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 1.25 (x[1] y[1] z[1])
     SET_CHAR_COORDINATES_SIMPLE player_actor x[1] y[1] z[1]
     
     timera = 0
-    //WHILE fDistance >= 1.5     //_distance
     IF NOT LOCATE_CHAR_DISTANCE_TO_COORDINATES player_actor x[0] y[0] z[0] 1.5
 
         WHILE NOT LOCATE_CHAR_DISTANCE_TO_COORDINATES player_actor x[0] y[0] z[0] 1.5
@@ -573,27 +546,22 @@ on_ground_zip_to_point:
                     ENDIF
                 ENDIF
             ENDIF
+
             fCharSpeed *= 1.020    
             CLAMP_FLOAT fCharSpeed 35.0 60.0 (fCharSpeed)     
             CLEO_CALL setCharVelocityTo 0 player_actor (x[0] y[0] z[0]) fCharSpeed
             //PRINT_FORMATTED_NOW "vel:%.1f" 1 fCharSpeed //DEBUG
-            
+
+            GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 -1.25 (x[1] y[1] z[1])
             IF NOT IS_LINE_OF_SIGHT_CLEAR (x[1] y[1] z[1]) (x[0] y[0] z[0]) (1 1 0 1 0)
-                //CLEAR_CHAR_TASKS player_actor
-                //CLEAR_CHAR_TASKS_IMMEDIATELY player_actor
-                WAIT 0
-                GOSUB destroyTwoWebs
-                RETURN
-            ENDIF
-            IF timera > 4000
-                CLEAR_CHAR_TASKS player_actor
-                CLEAR_CHAR_TASKS_IMMEDIATELY player_actor
+                SET_CHAR_COORDINATES_SIMPLE player_actor x[0] y[0] z[0]
                 WAIT 0
                 GOSUB destroyTwoWebs
                 RETURN
             ENDIF
             WAIT 0
         ENDWHILE
+
     ENDIF
     GOSUB destroyTwoWebs
 RETURN
@@ -614,27 +582,26 @@ point_launch_ground_building:
     WHILE IS_CHAR_PLAYING_ANIM player_actor ("groundToLampD")
         GET_CHAR_ANIM_CURRENT_TIME player_actor ("groundToLampD") (currentTime)
         IF currentTime >= 0.217     // frame 10/46
-            SET_CHAR_COLLISION player_actor TRUE
             BREAK
         ENDIF
         WAIT 0
     ENDWHILE
-    GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 1.0 (x[0] y[0] z[0])
-    SET_CHAR_COORDINATES_SIMPLE player_actor x[0] y[0] z[0]
-    WAIT 1
-    SET_CHAR_COLLISION player_actor TRUE
     CLEO_CALL setCharViewPointToCamera 0 player_actor
     y[2] = 0.75 //0.65  //2.0
     z[2] = 0.45 //0.45  //1.8
     fCharSpeed *= 1.25
-    CLAMP_FLOAT fCharSpeed 40.0 50.0 (fCharSpeed)
+    CLAMP_FLOAT fCharSpeed 40.0 50.0 (fCharSpeed)    
+    GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 2.0 (x[0] y[0] z[0])
+    SET_CHAR_COLLISION player_actor TRUE        
+    SET_CHAR_COORDINATES_SIMPLE player_actor x[0] y[0] z[0]
+    WAIT 10
     CLEO_CALL setCharVelocity 0 player_actor (0.0 y[2] z[2]) fCharSpeed
 
     randomVal = 1
     GOSUB playSFXSound
     WAIT 0
     WHILE IS_BUTTON_PRESSED PAD1 SQUARE  // ~k~~PED_JUMPING~
-        WAIT 1
+        WAIT 0
     ENDWHILE
 RETURN
 
@@ -1003,7 +970,7 @@ isActorInWater:
 CLEO_RETURN 0
 }
 {
-//CLEO_CALL isClearInSight 0 player_actor (0.0 0.0 -2.0) (/*solid*/ 1 /*car*/ 1 /*actor*/ 0 /*obj*/ 1 /*particle*/ 0)
+//CLEO_CALL isClearInSight 0 player_actor (0.0 0.0 -2.0) (/*solid*/ 1 /*car*/ 1 /*actor*/ 0 /*baseObject*/ 1 /*particle*/ 0)
 isClearInSight:
     LVAR_INT tempPlayer
     LVAR_FLOAT x y z
@@ -1020,7 +987,7 @@ CLEO_RETURN 0
 }
 
 {
-//CLEO_CALL isClearInSight 0 player_actor (x_offset y_offset z_offset) (dx1 dy1 dz1 dx2 dy2 dz2) (0.0 0.0 -2.0) (/*solid*/ 1 /*car*/ 1 /*actor*/ 0 /*obj*/ 1 /*particle*/ 0)
+//CLEO_CALL isClearInSight 0 player_actor (x_offset y_offset z_offset) (dx1 dy1 dz1 dx2 dy2 dz2) (0.0 0.0 -2.0) (/*solid*/ 1 /*car*/ 1 /*actor*/ 0 /*baseObject*/ 1 /*particle*/ 0)
 isClearInSightSphereRays:
     LVAR_INT tempPlayer //In
     LVAR_FLOAT x_offset y_offset z_offset dx1 dy1 dz1 dx2 dy2 dz2 //In
@@ -1107,7 +1074,7 @@ isClearInSightSphereRays:
 CLEO_RETURN 0
 }
 {
-//CLEO_CALL isClearInSight 0 player_actor (x_offset y_offset z_offset) (dx1 dy1 dz1 dx2 dy2 dz2) (0.0 0.0 -2.0) (/*solid*/ 1 /*car*/ 1 /*actor*/ 0 /*obj*/ 1 /*particle*/ 0)
+//CLEO_CALL isClearInSight 0 player_actor (x_offset y_offset z_offset) (dx1 dy1 dz1 dx2 dy2 dz2) (0.0 0.0 -2.0) (/*solid*/ 1 /*car*/ 1 /*actor*/ 0 /*baseObject*/ 1 /*particle*/ 0)
 isClearInSightGroundSphereRays:
     LVAR_INT tempPlayer //In
     LVAR_FLOAT x_offset y_offset z_offset dx1 dy1 dz1 dx2 dy2 dz2 //In
@@ -1248,6 +1215,7 @@ setCharVelocityTo:
     SET_CHAR_VELOCITY scplayer x[1] y[1] z[1]
     WAIT 0
     SET_CHAR_VELOCITY scplayer x[1] y[1] z[1]
+    WAIT 0
 CLEO_RETURN 0
 }
 {
