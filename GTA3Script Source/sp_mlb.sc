@@ -115,20 +115,20 @@ main_loop:
                                                         GOSUB REQUEST_Animations
                                                         GOSUB REQUEST_webAnimations
                                                         GOSUB in_air_zip_to_buidling
-                                                            IF IS_BUTTON_PRESSED PAD1 SQUARE  // ~k~~PED_JUMPING~
-                                                                IF GOSUB does_skill_Point_Launch_enabled
-                                                                    GOSUB point_launch_air_building                                                           
-                                                                ELSE
-                                                                    GET_CHAR_HEADING player_actor (zAngle)
-                                                                    GET_COORD_FROM_ANGLED_DISTANCE x[0] y[0] zAngle 0.2 (x[0] y[0])
-                                                                    GOSUB stay_on_building_from_air                                                     
-                                                                ENDIF
+                                                        IF IS_BUTTON_PRESSED PAD1 SQUARE  // ~k~~PED_JUMPING~
+                                                            IF GOSUB does_skill_Point_Launch_enabled
+                                                                GOSUB point_launch_air_building                                                           
                                                             ELSE
                                                                 GET_CHAR_HEADING player_actor (zAngle)
                                                                 GET_COORD_FROM_ANGLED_DISTANCE x[0] y[0] zAngle 0.2 (x[0] y[0])
-                                                                GOSUB stay_on_building_from_air                                                   
-                                                            ENDIF                                                                                          
-                                                            
+                                                                GOSUB stay_on_building_from_air                                                     
+                                                            ENDIF
+                                                        ELSE
+                                                            GET_CHAR_HEADING player_actor (zAngle)
+                                                            GET_COORD_FROM_ANGLED_DISTANCE x[0] y[0] zAngle 0.2 (x[0] y[0])
+                                                            GOSUB stay_on_building_from_air                                                   
+                                                        ENDIF                                                                                          
+                                        
                                                     ELSE
                                                         //----------------------------------- Zip if $player on Ground
                                                         GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 0.0 (x[1] y[1] z[1])
@@ -243,6 +243,7 @@ in_air_zip_to_buidling:
     //GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 0.0 (x[2] y[2] z[2])
     CLEAR_CHAR_TASKS player_actor
     CLEAR_CHAR_TASKS_IMMEDIATELY player_actor
+    
     TASK_PLAY_ANIM_NON_INTERRUPTABLE player_actor ("airToLampA" "spider") 13.0 (0 1 1 1) -2
     WAIT 1
     SET_CHAR_ANIM_SPEED player_actor "airToLampA" 2.0
@@ -565,12 +566,15 @@ on_ground_zip_to_point:
             CLEO_CALL setCharVelocityTo 0 player_actor (x[0] y[0] z[0]) fCharSpeed
             //PRINT_FORMATTED_NOW "vel:%.1f" 1 fCharSpeed //DEBUG
 
-            GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 -1.25 (x[1] y[1] z[1])
-            IF NOT IS_LINE_OF_SIGHT_CLEAR (x[1] y[1] z[1]) (x[0] y[0] z[0]) (1 1 0 1 0)
-                SET_CHAR_COORDINATES_SIMPLE player_actor x[0] y[0] z[0]
-                WAIT 0
-                GOSUB destroyTwoWebs
-                RETURN
+            GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 0.0 (x[1] y[1] z[1])
+            IF z[1] > z[0]
+                GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 -1.25 (x[1] y[1] z[1])
+                IF NOT IS_LINE_OF_SIGHT_CLEAR (x[1] y[1] z[1]) (x[0] y[0] z[0]) (1 1 0 1 0)
+                    SET_CHAR_COORDINATES_SIMPLE player_actor x[0] y[0] z[0]
+                    WAIT 0
+                    GOSUB destroyTwoWebs
+                    RETURN
+                ENDIF
             ENDIF
             WAIT 0
         ENDWHILE
@@ -1357,7 +1361,7 @@ find_target:
     GET_CHAR_COORDINATES player_actor pX pY pZ
     playerZ = pZ
     GET_DISTANCE_BETWEEN_COORDS_3D pX pY pZ hitX hitY hitZ scanT
-    IF scanT > 20.0
+    IF scanT > 25.0
         RETURN
     ENDIF
 
@@ -1433,8 +1437,14 @@ find_target:
     // HEIGHT LIMIT: the roof / ledge may be at most 15 m above the player.
     pZ = hitZ
     pZ -= playerZ
-    IF pZ > 15.0
-        RETURN
+    IF CLEO_CALL isClearInSight 0 player_actor (0.0 0.0 -3.0) (1 0 0 0 0)   //AIR      
+        IF pZ > 15.0
+            RETURN
+        ENDIF
+    ELSE
+        IF pZ > 10.0
+            RETURN
+        ENDIF    
     ENDIF
 
     // Scan for the nearest valid roof edge in four directions:
