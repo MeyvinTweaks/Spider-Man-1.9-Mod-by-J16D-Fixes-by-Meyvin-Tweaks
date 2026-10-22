@@ -32,7 +32,7 @@ GET_TEXTURE_FROM_SPRITE objCrosshair rwCross
 WAIT 150
 USE_TEXT_COMMANDS TRUE
 
-iTempVar = 0
+iTempVar = 0    //DEBUG
 SET_CLEO_SHARED_VAR varBuildingZip iTempVar
 
 start_check:
@@ -277,29 +277,28 @@ in_air_zip_to_buidling:
 
     randomVal = 0
     GOSUB playSFXSound
-
-    IF y[2] > 35.0
+    IF y[2] > 18.0
         randomVal = 0   // anim for long distance
     ELSE
         randomVal = 1   // anim for short distance
     ENDIF
 
-    timera = 0
-    //WHILE fDistance >= x[2]     //_distance              
+    timera = 0             
     IF NOT LOCATE_CHAR_DISTANCE_TO_COORDINATES player_actor x[0] y[0] z[0] 1.5
 
         WHILE NOT LOCATE_CHAR_DISTANCE_TO_COORDINATES player_actor x[0] y[0] z[0] 1.5
+
             GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 0.0 (x[1] y[1] z[1])
             GET_DISTANCE_BETWEEN_COORDS_3D (x[0] y[0] z[0]) (x[1] y[1] z[1]) (fDistance)
             fDistance -= x[2]
             CLEO_CALL getXangleBetweenPoints 0 (x[1] y[1] z[1]) (x[0] y[0] z[0]) (xAngle)
             GET_ANGLE_FROM_TWO_COORDS (x[1] y[1]) (x[0] y[0]) (zAngle)
             SET_CHAR_ROTATION player_actor xAngle 0.0 zAngle 
-
             CLEO_CALL linearInterpolation 0 (y[2] x[2] fDistance) (0.0 1.0) (currentTime)
             IF currentTime > 1.0
                 currentTime = 1.0
             ENDIF
+
             SWITCH randomVal
                 CASE 0  // anim for long distance
                     TASK_PLAY_ANIM_NON_INTERRUPTABLE player_actor ("airToLampB" "spider") 34.0 (0 1 1 1) -2
@@ -312,6 +311,7 @@ in_air_zip_to_buidling:
                     SET_CHAR_ANIM_PLAYING_FLAG player_actor ("airToLampB_B") 0
                     BREAK
             ENDSWITCH
+
             IF DOES_CHAR_EXIST iWebActor
                 TASK_PLAY_ANIM_NON_INTERRUPTABLE iWebActor ("LA_airToLampA" "mweb") 44.0 (0 1 1 1) -2
                 SET_CHAR_ANIM_CURRENT_TIME iWebActor ("LA_airToLampA") currentTime
@@ -1218,7 +1218,6 @@ setCharVelocityTo:
     SET_CHAR_VELOCITY scplayer x[1] y[1] z[1]
     WAIT 0
     SET_CHAR_VELOCITY scplayer x[1] y[1] z[1]
-    WAIT 0
 CLEO_RETURN 0
 }
 {
