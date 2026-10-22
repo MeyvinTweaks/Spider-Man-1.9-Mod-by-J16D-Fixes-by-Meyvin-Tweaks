@@ -334,7 +334,17 @@ in_air_zip_to_buidling:
             CLAMP_FLOAT fCharSpeed 35.0 60.0 (fCharSpeed)
             CLEO_CALL setCharVelocityTo 0 player_actor (x[0] y[0] z[0]) fCharSpeed
             //PRINT_FORMATTED_NOW "vel:%.1f" 1 fCharSpeed //DEBUG
-            
+
+            GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 0.0 (x[1] y[1] z[1])
+            IF z[1] > z[0]
+                GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 -1.25 (x[1] y[1] z[1])
+                IF NOT IS_LINE_OF_SIGHT_CLEAR (x[1] y[1] z[1]) (x[0] y[0] z[0]) (1 1 0 1 0)
+                    SET_CHAR_COORDINATES_SIMPLE player_actor x[0] y[0] z[0]
+                    WAIT 0
+                    GOSUB destroyTwoWebs
+                    RETURN
+                ENDIF
+            ENDIF
         ENDWHILE
     ENDIF
     GOSUB destroyTwoWebs
