@@ -235,7 +235,7 @@ J16D335 When turned ON, press Aim Button ~n~to auto-aim peds. ~n~Default: Off
 J16D336 When turned ON, Spider-Man will ~n~be able to drive vehicles. ~n~~r~Warning! ~s~This may cause bugs because ~n~incompatibility with Web-Strike. ~n~Default: Off
 J16D337 When turned ON, Spider-Man will ~n~be ignored by police.
 J16D338 Press ~h~Q besides an object or a vehicle ~n~to catch and throw them. ~n~Default: Off
-J16D339 When turned ON, Spider-Man will be able to web zip on building's edges. ~n~~r~Warning! ~s~This is a ~r~BETA ~s~feature ~n~and may have some issues, ~n~use it by your own risk.
+J16D339 When turned ON, Spider-Man will be able to web zip on building's edges. ~n~~r~Warning! ~s~This is a ~r~BETA ~s~feature ~n~ so, it may have some issues, ~n~use it by your own risk.
 
 J16D400 No Power Selected
 J16D401 Web Blossom
