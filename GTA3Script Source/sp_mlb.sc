@@ -22,15 +22,12 @@ LVAR_FLOAT iTempVar2 xAngle zAngle x[3] y[3] z[3] v1 v2 rwAngle
 LVAR_FLOAT fDistance currentTime fCharSpeed
 LVAR_INT rwCross baseObject iWebActor iWebActorR sfx sfxB
 
+GET_PLAYER_CHAR 0 player_actor
+
 CONST_INT STOP 0 
 
-GET_PLAYER_CHAR 0 player_actor
-GOSUB REQUEST_Animations
-GOSUB REQUEST_webAnimations
 GOSUB loadTextures
 GET_TEXTURE_FROM_SPRITE objCrosshair rwCross
-WAIT 150
-USE_TEXT_COMMANDS TRUE
 
 iTempVar = 0    //DEBUG
 SET_CLEO_SHARED_VAR varBuildingZip iTempVar
@@ -39,13 +36,17 @@ start_check:
 GOSUB readVars
 IF toggleSpiderMod = 0
     WHILE toggleSpiderMod = 0
-        WAIT 0
         GOSUB readVars 
         IF toggleSpiderMod = 1     
             BREAK
         ENDIF
+        WAIT 0    
     ENDWHILE
 ENDIF
+
+GOSUB REQUEST_Animations
+GOSUB REQUEST_webAnimations
+USE_TEXT_COMMANDS TRUE
 
 main_loop:
     IF IS_PLAYER_PLAYING player
@@ -295,6 +296,7 @@ in_air_zip_to_buidling:
             CLEO_CALL getXangleBetweenPoints 0 (x[1] y[1] z[1]) (x[0] y[0] z[0]) (xAngle)
             GET_ANGLE_FROM_TWO_COORDS (x[1] y[1]) (x[0] y[0]) (zAngle)
             SET_CHAR_ROTATION player_actor xAngle 0.0 zAngle 
+
             CLEO_CALL linearInterpolation 0 (y[2] x[2] fDistance) (0.0 1.0) (currentTime)
             IF currentTime > 1.0
                 currentTime = 1.0

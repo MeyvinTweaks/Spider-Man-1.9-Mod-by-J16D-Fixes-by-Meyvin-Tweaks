@@ -101,23 +101,24 @@ LVAR_INT randomVal sfx checkSfx iTempVar
 
 GET_PLAYER_CHAR 0 player_actor
 
-IF GOSUB does_scripts_exist
-//-+-- Start External Threads   //Main Scripts
-    //Main Scripts
-    STREAM_CUSTOM_SCRIPT "SpiderJ16D\sp_dw.cs"      // Draw Indicator | webstrike & Stealth
-    STREAM_CUSTOM_SCRIPT "SpiderJ16D\sp_ev.cs"      // Fight - Dodge (near & far distance)
-    STREAM_CUSTOM_SCRIPT "SpiderJ16D\sp_evb.cs"     // Manual Dodge & Sliding dodge
-    STREAM_CUSTOM_SCRIPT "SpiderJ16D\sp_hud.cs"     // Main Hud script
-    STREAM_CUSTOM_SCRIPT "SpiderJ16D\sp_lvl.cs"     // Level Control
-    STREAM_CUSTOM_SCRIPT "SpiderJ16D\sp_mb.cs"      // On ground/jump script
-    STREAM_CUSTOM_SCRIPT "SpiderJ16D\sp_me.cs"      // Melee Combo X4 | Air Combo x4 | Swing kick
-    STREAM_CUSTOM_SCRIPT "SpiderJ16D\sp_ml.cs"      // Web zip (air / lamp / object)
-    STREAM_CUSTOM_SCRIPT "SpiderJ16D\sp_mm.cs"      // Gadget Select Script
-    STREAM_CUSTOM_SCRIPT "SpiderJ16D\sp_po.cs"      // Powers
-    STREAM_CUSTOM_SCRIPT "SpiderJ16D\sp_st.cs"      // Stealth (Hidden player) AI visibility
-    STREAM_CUSTOM_SCRIPT "SpiderJ16D\sp_wep.cs"     // Auto-Fill Web Ammo
-    STREAM_CUSTOM_SCRIPT "SpiderJ16D\sp_thob.cs"     // Throw Objects
-ENDIF
+    IF GOSUB does_scripts_exist
+    //-+-- Start External Threads   //Main Scripts
+        //Main Scripts
+        STREAM_CUSTOM_SCRIPT "SpiderJ16D\sp_dw.cs"      // Draw Indicator | webstrike & Stealth
+        STREAM_CUSTOM_SCRIPT "SpiderJ16D\sp_ev.cs"      // Fight - Dodge (near & far distance)
+        STREAM_CUSTOM_SCRIPT "SpiderJ16D\sp_evb.cs"     // Manual Dodge & Sliding dodge
+        STREAM_CUSTOM_SCRIPT "SpiderJ16D\sp_hud.cs"     // Main Hud script
+        STREAM_CUSTOM_SCRIPT "SpiderJ16D\sp_lvl.cs"     // Level Control
+        STREAM_CUSTOM_SCRIPT "SpiderJ16D\sp_mb.cs"      // On ground/jump script
+        STREAM_CUSTOM_SCRIPT "SpiderJ16D\sp_me.cs"      // Melee Combo X4 | Air Combo x4 | Swing kick
+        STREAM_CUSTOM_SCRIPT "SpiderJ16D\sp_ml.cs"      // Web zip (air / lamp / object)
+        STREAM_CUSTOM_SCRIPT "SpiderJ16D\sp_mm.cs"      // Gadget Select Script
+        STREAM_CUSTOM_SCRIPT "SpiderJ16D\sp_po.cs"      // Powers
+        STREAM_CUSTOM_SCRIPT "SpiderJ16D\sp_st.cs"      // Stealth (Hidden player) AI visibility
+        STREAM_CUSTOM_SCRIPT "SpiderJ16D\sp_wep.cs"     // Auto-Fill Web Ammo
+        STREAM_CUSTOM_SCRIPT "SpiderJ16D\sp_thob.cs"     // Throw Objects
+    ENDIF
+
     //Reservoirs    //additional
     IF DOES_FILE_EXIST "CLEO\SpiderJ16D\sp_res.cs"
         STREAM_CUSTOM_SCRIPT "SpiderJ16D\sp_res.cs"     // Reservoir Scripts
@@ -144,6 +145,10 @@ ENDIF
         STREAM_CUSTOM_SCRIPT "SpiderJ16D\sp_mlb.cs"     // Web Zip To Building
     ENDIF             
 
+    //-+-- Start Internal Threads
+    STREAM_CUSTOM_SCRIPT_FROM_LABEL sp_cam_internalThread   // Camera Script
+    STREAM_CUSTOM_SCRIPT_FROM_LABEL sp_tmp_internalThread   // Fix 01 Animation / BRASSKNUCKLE (Web Shooter)     
+
 start_check:
 GOSUB readVars
 IF toggleSpiderMod = 0
@@ -155,10 +160,6 @@ IF toggleSpiderMod = 0
         WAIT 0
     ENDWHILE
 ENDIF
-
-//-+-- Start Internal Threads
-    STREAM_CUSTOM_SCRIPT_FROM_LABEL sp_cam_internalThread   // Camera Script
-    STREAM_CUSTOM_SCRIPT_FROM_LABEL sp_tmp_internalThread   // Fix 01 Animation / BRASSKNUCKLE (Web Shooter) 
 
 //WRITE_MEMORY 0xC1704C 1 105 FALSE   //60fps
 CLEO_CALL disableZvelocityLimit 0 1

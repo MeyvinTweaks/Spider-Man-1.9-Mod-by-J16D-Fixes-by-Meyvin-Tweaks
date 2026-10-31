@@ -52,13 +52,8 @@ main_loop:
                     ENDIF
                     GET_CHAR_SPEED player_actor (fCharSpeed)     // check if the velocity is enough for Ground Crush      
 
-                    IF IS_CHAR_REALLY_IN_AIR player_actor
-                        SET_CHAR_PROOFS player_actor FALSE FALSE FALSE TRUE FALSE    
-                    ELSE
-                        SET_CHAR_PROOFS player_actor FALSE FALSE FALSE FALSE FALSE
-                    ENDIF                                       
-
                 ELSE
+                
                     //----------------------------------- if $player is on Ground                  
                     GOSUB reset_char_falling_ground
 
