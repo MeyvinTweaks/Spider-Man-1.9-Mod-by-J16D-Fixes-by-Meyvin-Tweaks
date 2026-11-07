@@ -63,88 +63,89 @@ main_loop:
                         iTempVar = 0
                         SET_CLEO_SHARED_VAR varBuildingZipFlag iTempVar   
                         
-                        IF CLEO_CALL get_object_offset_indicator 0 obj (x[0] y[0] z[0]) //Lamps                     
-                            GOSUB draw_indicator_lamps                                                    
+                        IF CLEO_CALL get_object_offset_indicator 0 obj (x[0] y[0] z[0]) //Lamps          
+                            IF GOSUB is_not_player_playing_web_zip_building_anims           
+                                GOSUB draw_indicator_lamps                                                    
 
-                            //----------------------------------- Zip to Point
-                            // L2 + R2 
-                            IF IS_BUTTON_PRESSED PAD1 LEFTSHOULDER2         // ~k~~PED_CYCLE_WEAPON_LEFT~/ 
-                            AND NOT IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
-                            AND NOT IS_BUTTON_PRESSED PAD1 SQUARE           // ~k~~PED_JUMPING~
-                            AND NOT IS_BUTTON_PRESSED PAD1 CIRCLE           // ~k~~PED_FIREWEAPON~
-                                
-                                IF IS_BUTTON_PRESSED PAD1 RIGHTSHOULDER2       // ~k~~PED_CYCLE_WEAPON_RIGHT~/ 
+                                //----------------------------------- Zip to Point
+                                // L2 + R2 
+                                IF IS_BUTTON_PRESSED PAD1 LEFTSHOULDER2         // ~k~~PED_CYCLE_WEAPON_LEFT~/ 
                                 AND NOT IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                 AND NOT IS_BUTTON_PRESSED PAD1 SQUARE           // ~k~~PED_JUMPING~
-                                AND NOT IS_BUTTON_PRESSED PAD1 CIRCLE           // ~k~~PED_FIREWEAPON~          
+                                AND NOT IS_BUTTON_PRESSED PAD1 CIRCLE           // ~k~~PED_FIREWEAPON~
+                                    
+                                    IF IS_BUTTON_PRESSED PAD1 RIGHTSHOULDER2       // ~k~~PED_CYCLE_WEAPON_RIGHT~/ 
+                                    AND NOT IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
+                                    AND NOT IS_BUTTON_PRESSED PAD1 SQUARE           // ~k~~PED_JUMPING~
+                                    AND NOT IS_BUTTON_PRESSED PAD1 CIRCLE           // ~k~~PED_FIREWEAPON~          
 
-                                    IF GOSUB is_not_player_playing_swing_anims
+                                        IF GOSUB is_not_player_playing_swing_anims
 
-                                        CLEO_CALL get_object_offset 0 obj (x[0] y[0] z[0])
-                                        IF CLEO_CALL isClearInSight 0 player_actor (0.0 0.0 -3.0) (1 0 0 0 0)   //AIR
+                                            CLEO_CALL get_object_offset 0 obj (x[0] y[0] z[0])
+                                            IF CLEO_CALL isClearInSight 0 player_actor (0.0 0.0 -3.0) (1 0 0 0 0)   //AIR
 
-                                            //----------------------------------- Zip if $player on Air
-                                            GOSUB REQUEST_Animations
-                                            GOSUB REQUEST_webAnimations
-                                            GOSUB in_air_zip_to_point
-                                            IF is_near_pole = TRUE
-                                                IF IS_BUTTON_PRESSED PAD1 SQUARE  // ~k~~PED_JUMPING~
-                                                    IF GOSUB does_skill_Point_Launch_enabled
-                                                        GOSUB point_launch_air
-                                                    ELSE
-                                                        GOSUB stay_on_pole_from_air
-                                                    ENDIF
-                                                ELSE
-                                                    GOSUB stay_on_pole_from_air
-                                                ENDIF
-                                                is_near_pole = FALSE
-                                                IF DOES_OBJECT_EXIST obj
-                                                    SET_OBJECT_COLLISION obj TRUE
-                                                ENDIF                                                
-                                            ELSE
-                                                IF DOES_OBJECT_EXIST obj
-                                                    SET_OBJECT_COLLISION obj TRUE
-                                                ENDIF
-                                            ENDIF
-
-                                        ELSE
-
-                                            GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 0.0 (x[1] y[1] z[1])
-                                            IF z[0] >= z[1]   // fix for stuck player
-                                                //----------------------------------- Zip if $player on Ground
+                                                //----------------------------------- Zip if $player on Air
                                                 GOSUB REQUEST_Animations
                                                 GOSUB REQUEST_webAnimations
-                                                GOSUB on_ground_zip_to_point
+                                                GOSUB in_air_zip_to_point
                                                 IF is_near_pole = TRUE
                                                     IF IS_BUTTON_PRESSED PAD1 SQUARE  // ~k~~PED_JUMPING~
                                                         IF GOSUB does_skill_Point_Launch_enabled
-                                                            GOSUB point_launch_ground
+                                                            GOSUB point_launch_air
                                                         ELSE
-                                                            GOSUB stay_on_pole_from_ground
+                                                            GOSUB stay_on_pole_from_air
                                                         ENDIF
                                                     ELSE
-                                                        GOSUB stay_on_pole_from_ground
+                                                        GOSUB stay_on_pole_from_air
                                                     ENDIF
                                                     is_near_pole = FALSE
                                                     IF DOES_OBJECT_EXIST obj
                                                         SET_OBJECT_COLLISION obj TRUE
-                                                    ENDIF    
+                                                    ENDIF                                                
                                                 ELSE
                                                     IF DOES_OBJECT_EXIST obj
                                                         SET_OBJECT_COLLISION obj TRUE
-                                                        WAIT 0
-                                                        SET_OBJECT_COLLISION obj TRUE
                                                     ENDIF
                                                 ENDIF
+
+                                            ELSE
+
+                                                GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 0.0 (x[1] y[1] z[1])
+                                                IF z[0] >= z[1]   // fix for stuck player
+                                                    //----------------------------------- Zip if $player on Ground
+                                                    GOSUB REQUEST_Animations
+                                                    GOSUB REQUEST_webAnimations
+                                                    GOSUB on_ground_zip_to_point
+                                                    IF is_near_pole = TRUE
+                                                        IF IS_BUTTON_PRESSED PAD1 SQUARE  // ~k~~PED_JUMPING~
+                                                            IF GOSUB does_skill_Point_Launch_enabled
+                                                                GOSUB point_launch_ground
+                                                            ELSE
+                                                                GOSUB stay_on_pole_from_ground
+                                                            ENDIF
+                                                        ELSE
+                                                            GOSUB stay_on_pole_from_ground
+                                                        ENDIF
+                                                        is_near_pole = FALSE
+                                                        IF DOES_OBJECT_EXIST obj
+                                                            SET_OBJECT_COLLISION obj TRUE
+                                                        ENDIF    
+                                                    ELSE
+                                                        IF DOES_OBJECT_EXIST obj
+                                                            SET_OBJECT_COLLISION obj TRUE
+                                                            WAIT 0
+                                                            SET_OBJECT_COLLISION obj TRUE
+                                                        ENDIF
+                                                    ENDIF
+                                                ENDIF
+
                                             ENDIF
 
-                                        ENDIF
-
-                                    ENDIF   // end check swing anims
-                                
+                                        ENDIF   // end check swing anims
+                                    
+                                    ENDIF
                                 ENDIF
                             ENDIF
-
                         ELSE
                             iTempVar = 0
                             SET_CLEO_SHARED_VAR varBuildingZipFlag iTempVar
@@ -732,6 +733,19 @@ is_not_player_playing_swing_anims:
     ENDIF
     RETURN_FALSE
 RETURN
+
+is_not_player_playing_web_zip_building_anims:
+    IF NOT IS_CHAR_PLAYING_ANIM player_actor ("groundToLampA")
+    AND NOT IS_CHAR_PLAYING_ANIM player_actor ("airToLampA")
+    AND NOT IS_CHAR_PLAYING_ANIM player_actor ("airToLampB")
+    AND NOT IS_CHAR_PLAYING_ANIM player_actor ("airToLampB_B")   
+    AND NOT IS_CHAR_PLAYING_ANIM player_actor ("groundToLampB")  
+    AND NOT IS_CHAR_PLAYING_ANIM player_actor ("groundToLampD")   
+        RETURN_TRUE
+        RETURN        
+    ENDIF
+    RETURN_FALSE
+RETURN        
 
 is_not_player_playing_for_backzip:
     IF NOT IS_CHAR_PLAYING_ANIM player_actor ("pkJumpA")

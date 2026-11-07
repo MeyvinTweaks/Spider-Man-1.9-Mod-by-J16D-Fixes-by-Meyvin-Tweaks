@@ -96,67 +96,69 @@ main_loop:
                                     // Not there yet. The final TRUE makes this command draw the marker,
                                     // so it is only reached (and drawn) when the player is away from the target.
                                     IF NOT LOCATE_CHAR_ANY_MEANS_3D player_actor x[0] y[0] z[0] 1.0 1.0 1.0 FALSE
-                                        GOSUB draw_building_indicator
+                                        IF GOSUB is_not_player_playing_web_zip_building_anims
+                                            GOSUB draw_building_indicator
 
-                                        //----------------------------------- Zip to Point
-                                        // L2 + R2 
-                                        IF IS_BUTTON_PRESSED PAD1 LEFTSHOULDER2         // ~k~~PED_CYCLE_WEAPON_LEFT~/ 
-                                        AND NOT IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
-                                        AND NOT IS_BUTTON_PRESSED PAD1 SQUARE           // ~k~~PED_JUMPING~
-                                        AND NOT IS_BUTTON_PRESSED PAD1 CIRCLE           // ~k~~PED_FIREWEAPON~
-
-                                            IF IS_BUTTON_PRESSED PAD1 RIGHTSHOULDER2       // ~k~~PED_CYCLE_WEAPON_RIGHT~/ 
+                                            //----------------------------------- Zip to Point
+                                            // L2 + R2 
+                                            IF IS_BUTTON_PRESSED PAD1 LEFTSHOULDER2         // ~k~~PED_CYCLE_WEAPON_LEFT~/ 
                                             AND NOT IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                             AND NOT IS_BUTTON_PRESSED PAD1 SQUARE           // ~k~~PED_JUMPING~
-                                            AND NOT IS_BUTTON_PRESSED PAD1 CIRCLE           // ~k~~PED_FIREWEAPON~    
-                                                
-                                                IF GOSUB is_not_player_playing_anims
-                                                    IF CLEO_CALL isClearInSight 0 player_actor (0.0 0.0 -3.0) (1 0 0 0 0)   //AIR
-                                                        //----------------------------------- Zip if $player on Air
-                                                        GOSUB REQUEST_Animations
-                                                        GOSUB REQUEST_webAnimations
-                                                        GOSUB in_air_zip_to_buidling
-                                                        IF IS_BUTTON_PRESSED PAD1 SQUARE  // ~k~~PED_JUMPING~
-                                                            IF GOSUB does_skill_Point_Launch_enabled
-                                                                GOSUB point_launch_air_building                                                           
+                                            AND NOT IS_BUTTON_PRESSED PAD1 CIRCLE           // ~k~~PED_FIREWEAPON~
+
+                                                IF IS_BUTTON_PRESSED PAD1 RIGHTSHOULDER2       // ~k~~PED_CYCLE_WEAPON_RIGHT~/ 
+                                                AND NOT IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
+                                                AND NOT IS_BUTTON_PRESSED PAD1 SQUARE           // ~k~~PED_JUMPING~
+                                                AND NOT IS_BUTTON_PRESSED PAD1 CIRCLE           // ~k~~PED_FIREWEAPON~    
+                                                    
+                                                    IF GOSUB is_not_player_playing_anims
+                                                        IF CLEO_CALL isClearInSight 0 player_actor (0.0 0.0 -3.0) (1 0 0 0 0)   //AIR
+                                                            //----------------------------------- Zip if $player on Air
+                                                            GOSUB REQUEST_Animations
+                                                            GOSUB REQUEST_webAnimations
+                                                            GOSUB in_air_zip_to_buidling
+                                                            IF IS_BUTTON_PRESSED PAD1 SQUARE  // ~k~~PED_JUMPING~
+                                                                IF GOSUB does_skill_Point_Launch_enabled
+                                                                    GOSUB point_launch_air_building                                                           
+                                                                ELSE
+                                                                    GET_CHAR_HEADING player_actor (zAngle)
+                                                                    GET_COORD_FROM_ANGLED_DISTANCE x[0] y[0] zAngle 0.2 (x[0] y[0])
+                                                                    GOSUB stay_on_building_from_air                                                     
+                                                                ENDIF
                                                             ELSE
                                                                 GET_CHAR_HEADING player_actor (zAngle)
                                                                 GET_COORD_FROM_ANGLED_DISTANCE x[0] y[0] zAngle 0.2 (x[0] y[0])
-                                                                GOSUB stay_on_building_from_air                                                     
-                                                            ENDIF
+                                                                GOSUB stay_on_building_from_air                                                   
+                                                            ENDIF                                                                                          
+                                            
                                                         ELSE
-                                                            GET_CHAR_HEADING player_actor (zAngle)
-                                                            GET_COORD_FROM_ANGLED_DISTANCE x[0] y[0] zAngle 0.2 (x[0] y[0])
-                                                            GOSUB stay_on_building_from_air                                                   
-                                                        ENDIF                                                                                          
-                                        
-                                                    ELSE
-                                                        //----------------------------------- Zip if $player on Ground
-                                                        GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 0.0 (x[1] y[1] z[1])
-                                                        
-                                                        //----------------------------------- Zip if $player on Ground
-                                                        GOSUB REQUEST_Animations
-                                                        GOSUB REQUEST_webAnimations
-                                                        GOSUB on_ground_zip_to_point
+                                                            //----------------------------------- Zip if $player on Ground
+                                                            GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS player_actor 0.0 0.0 0.0 (x[1] y[1] z[1])
+                                                            
+                                                            //----------------------------------- Zip if $player on Ground
+                                                            GOSUB REQUEST_Animations
+                                                            GOSUB REQUEST_webAnimations
+                                                            GOSUB on_ground_zip_to_point
 
-                                                        IF IS_BUTTON_PRESSED PAD1 SQUARE  // ~k~~PED_JUMPING~
-                                                            IF GOSUB does_skill_Point_Launch_enabled
-                                                                GOSUB point_launch_ground_building
+                                                            IF IS_BUTTON_PRESSED PAD1 SQUARE  // ~k~~PED_JUMPING~
+                                                                IF GOSUB does_skill_Point_Launch_enabled
+                                                                    GOSUB point_launch_ground_building
+                                                                ELSE
+                                                                    GET_CHAR_HEADING player_actor (zAngle)
+                                                                    GET_COORD_FROM_ANGLED_DISTANCE x[0] y[0] zAngle 0.25 (x[0] y[0])
+                                                                    GOSUB stay_on_building_from_ground
+                                                                ENDIF
                                                             ELSE
                                                                 GET_CHAR_HEADING player_actor (zAngle)
                                                                 GET_COORD_FROM_ANGLED_DISTANCE x[0] y[0] zAngle 0.25 (x[0] y[0])
                                                                 GOSUB stay_on_building_from_ground
                                                             ENDIF
-                                                        ELSE
-                                                            GET_CHAR_HEADING player_actor (zAngle)
-                                                            GET_COORD_FROM_ANGLED_DISTANCE x[0] y[0] zAngle 0.25 (x[0] y[0])
-                                                            GOSUB stay_on_building_from_ground
-                                                        ENDIF
 
+                                                        ENDIF
                                                     ENDIF
                                                 ENDIF
-                                            ENDIF
 
+                                            ENDIF
                                         ENDIF
                                     ENDIF
                                 ENDIF
@@ -237,6 +239,19 @@ is_spider_hud_enabled:
     ENDIF
     RETURN_FALSE
 RETURN
+
+is_not_player_playing_web_zip_building_anims:
+    IF NOT IS_CHAR_PLAYING_ANIM player_actor ("groundToLampA")
+    AND NOT IS_CHAR_PLAYING_ANIM player_actor ("airToLampA")
+    AND NOT IS_CHAR_PLAYING_ANIM player_actor ("airToLampB")
+    AND NOT IS_CHAR_PLAYING_ANIM player_actor ("airToLampB_B")   
+    AND NOT IS_CHAR_PLAYING_ANIM player_actor ("groundToLampB")  
+    AND NOT IS_CHAR_PLAYING_ANIM player_actor ("groundToLampD")   
+        RETURN_TRUE
+        RETURN        
+    ENDIF
+    RETURN_FALSE
+RETURN        
 
 in_air_zip_to_buidling:
     GOSUB destroyTwoWebs
