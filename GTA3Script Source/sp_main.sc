@@ -170,7 +170,7 @@ GOSUB REQUEST_SwingAnimations
 
 main_loop:
     SHUT_CHAR_UP player_actor TRUE
-    //SET_CHAR_PROOFS player_actor FALSE FALSE FALSE TRUE FALSE
+    SET_CHAR_PROOFS player_actor FALSE FALSE FALSE TRUE FALSE
     
     IF IS_PLAYER_PLAYING player
     AND NOT IS_CHAR_IN_ANY_CAR player_actor
