@@ -98,6 +98,7 @@ LVAR_FLOAT fLongitude fCharSpeed fAmplitude
 LVAR_FLOAT fSyncMaxAngle fSyncMinAngle fSyncAngle
 LVAR_FLOAT fXAnglePlayerAir fZAnglePlayerAir
 LVAR_INT randomVal sfx checkSfx iTempVar
+LVAR_INT pStruct
 
 GET_PLAYER_CHAR 0 player_actor
 
@@ -386,7 +387,6 @@ main_loop:
                                 GET_CLEO_SHARED_VAR varFixGround (isFuncEnabled) //is Enabled Ground
                                 IF isFuncEnabled = 1
                                     // simulates is in air  -avoid stuck in ground
-                                    LVAR_INT pStruct
                                     GET_PED_POINTER player_actor (pStruct)
                                     WRITE_STRUCT_OFFSET pStruct 0x46C BYTE 0    // ONFOOT_STATE = AIR
 
@@ -637,6 +637,7 @@ is_not_player_playing_anims:
                                 IF NOT IS_CHAR_PLAYING_ANIM player_actor ("groundToLampA")
                                 AND NOT IS_CHAR_PLAYING_ANIM player_actor ("airToLampA")
                                 AND NOT IS_CHAR_PLAYING_ANIM player_actor ("airToLampB")
+                                AND NOT IS_CHAR_PLAYING_ANIM player_actor ("groundToLampC")
                                 AND NOT IS_CHAR_PLAYING_ANIM player_actor ("airToLampB_B")   
                                 AND NOT IS_CHAR_PLAYING_ANIM player_actor ("groundToLampB")  
                                 AND NOT IS_CHAR_PLAYING_ANIM player_actor ("groundToLampD") 
@@ -1694,35 +1695,64 @@ spideyFrontWallRight:
 
     animWallRightContinue:
     CLEO_CALL getDataJoystick 0 (LRStick UDStick)
-    WHILE IS_BUTTON_PRESSED PAD1 CROSS   // ~k~~PED_SPRINT~
-    AND 0 > UDStick //Forward
-        IF CLEO_CALL isClearInSight 0 player_actor (2.0 0.25 0.0) (1 0 0 0 0)    //Right
-            IF NOT IS_PC_USING_JOYPAD
+    IF NOT IS_PC_USING_JOYPAD       
+        // Keyboard + Mouse
+        WHILE IS_BUTTON_PRESSED PAD1 CROSS   // ~k~~PED_SPRINT~
+        AND 0 > UDStick //Forward
+            IF CLEO_CALL isClearInSight 0 player_actor (2.0 0.25 0.0) (1 0 0 0 0)    //Right
                 GOTO animCornerRight
-            ENDIF
-        ELSE
-            IF CLEO_CALL isClearInSight 0 player_actor (0.0 2.0 0.0) (1 0 0 0 0)    //Front
-                IF NOT IS_CHAR_PLAYING_ANIM player_actor "run_wall_R_B"
-                    CLEO_CALL setZangleCharWall 0 player_actor (10.0 0.2 0.0) (10.0 -0.2 0.0) 0.0
-                    CLEO_CALL setCoordsInter 0 player_actor (5.0 0.0 0.0) 0.40
-                    CLEAR_CHAR_TASKS player_actor
-                    TASK_PLAY_ANIM_NON_INTERRUPTABLE player_actor "run_wall_R_B" "spider" 30.0 (1 1 1 0) -2
-                    WAIT 0
-                    SET_CHAR_ANIM_SPEED player_actor "run_wall_R_B" 1.15
-                ELSE
-                    CLEO_CALL addForceToChar 0 player_actor (0.0 fVelY 0.15) fAmplitude
-                    IF IS_BUTTON_PRESSED PAD1 SQUARE  // ~k~~PED_JUMPING~
-                        GOTO endWallRight
-                    ENDIF
-                ENDIF
             ELSE
-                //PRINT_FORMATTED "Wall Front! (2)" 1000
-                GOTO endWallRight
-            ENDIF            
-        ENDIF
-        CLEO_CALL getDataJoystick 0 (LRStick UDStick)
-        WAIT 0
-    ENDWHILE
+                IF CLEO_CALL isClearInSight 0 player_actor (0.0 2.0 0.0) (1 0 0 0 0)    //Front
+                    IF NOT IS_CHAR_PLAYING_ANIM player_actor "run_wall_R_B"
+                        CLEO_CALL setZangleCharWall 0 player_actor (10.0 0.2 0.0) (10.0 -0.2 0.0) 0.0
+                        CLEO_CALL setCoordsInter 0 player_actor (5.0 0.0 0.0) 0.40
+                        CLEAR_CHAR_TASKS player_actor
+                        TASK_PLAY_ANIM_NON_INTERRUPTABLE player_actor "run_wall_R_B" "spider" 30.0 (1 1 1 0) -2
+                        WAIT 0
+                        SET_CHAR_ANIM_SPEED player_actor "run_wall_R_B" 1.15
+                    ELSE
+                        CLEO_CALL addForceToChar 0 player_actor (0.0 fVelY 0.15) fAmplitude
+                        IF IS_BUTTON_PRESSED PAD1 SQUARE  // ~k~~PED_JUMPING~
+                            GOTO endWallRight
+                        ENDIF
+                    ENDIF
+                ELSE
+                    //PRINT_FORMATTED "Wall Front! (2)" 1000
+                    GOTO endWallRight
+                ENDIF            
+            ENDIF
+            CLEO_CALL getDataJoystick 0 (LRStick UDStick)
+            WAIT 0
+        ENDWHILE
+    ELSE
+        // Controller
+        WHILE IS_BUTTON_PRESSED PAD1 CROSS   // ~k~~PED_SPRINT~
+            IF CLEO_CALL isClearInSight 0 player_actor (2.0 0.25 0.0) (1 0 0 0 0)    //Right
+                GOTO animCornerRight
+            ELSE
+                IF CLEO_CALL isClearInSight 0 player_actor (0.0 2.0 0.0) (1 0 0 0 0)    //Front
+                    IF NOT IS_CHAR_PLAYING_ANIM player_actor "run_wall_R_B"
+                        CLEO_CALL setZangleCharWall 0 player_actor (10.0 0.2 0.0) (10.0 -0.2 0.0) 0.0
+                        CLEO_CALL setCoordsInter 0 player_actor (5.0 0.0 0.0) 0.40
+                        CLEAR_CHAR_TASKS player_actor
+                        TASK_PLAY_ANIM_NON_INTERRUPTABLE player_actor "run_wall_R_B" "spider" 30.0 (1 1 1 0) -2
+                        WAIT 0
+                        SET_CHAR_ANIM_SPEED player_actor "run_wall_R_B" 1.15
+                    ELSE
+                        CLEO_CALL addForceToChar 0 player_actor (0.0 fVelY 0.15) fAmplitude
+                        IF IS_BUTTON_PRESSED PAD1 SQUARE  // ~k~~PED_JUMPING~
+                            GOTO endWallRight
+                        ENDIF
+                    ENDIF
+                ELSE
+                    //PRINT_FORMATTED "Wall Front! (2)" 1000
+                    GOTO endWallRight
+                ENDIF            
+            ENDIF
+            CLEO_CALL getDataJoystick 0 (LRStick UDStick)
+            WAIT 0
+        ENDWHILE
+    ENDIF    
     GOTO endWallRight
 
     animCornerRight:
@@ -1825,35 +1855,64 @@ spideyFrontWallLeft:
 
     animWallLeftContinue:
     CLEO_CALL getDataJoystick 0 (LRStick UDStick)
-    WHILE IS_BUTTON_PRESSED PAD1 CROSS   // ~k~~PED_SPRINT~
-    AND 0 > UDStick //Forward
-        IF CLEO_CALL isClearInSight 0 player_actor (-2.0 0.25 0.0) (1 0 0 0 0)    //Left
-            IF NOT IS_PC_USING_JOYPAD
+    IF NOT IS_PC_USING_JOYPAD
+        // Keyboard + Mouse
+        WHILE IS_BUTTON_PRESSED PAD1 CROSS   // ~k~~PED_SPRINT~
+        AND 0 > UDStick //Forward
+            IF CLEO_CALL isClearInSight 0 player_actor (-2.0 0.25 0.0) (1 0 0 0 0)    //Left
                 GOTO animCornerLeft
-            ENDIF
-        ELSE
-            IF CLEO_CALL isClearInSight 0 player_actor (0.0 2.0 0.0) (1 0 0 0 0)    //Front
-                IF NOT IS_CHAR_PLAYING_ANIM player_actor "run_wall_L_B"
-                    CLEO_CALL setZangleCharWall 0 player_actor (-10.0 0.2 0.0) (-10.0 -0.2 0.0) 0.0
-                    CLEO_CALL setCoordsInter 0 player_actor (-5.0 0.0 0.0) 0.40
-                    CLEAR_CHAR_TASKS player_actor
-                    TASK_PLAY_ANIM_NON_INTERRUPTABLE player_actor "run_wall_L_B" "spider" 30.0 (1 1 1 0) -2
-                    WAIT 0
-                    SET_CHAR_ANIM_SPEED player_actor "run_wall_L_B" 1.15
-                ELSE
-                    CLEO_CALL addForceToChar 0 player_actor (0.0 fVelY 0.15) fAmplitude
-                    IF IS_BUTTON_PRESSED PAD1 SQUARE  // ~k~~PED_JUMPING~
-                        GOTO endWallLeft
-                    ENDIF
-                ENDIF
             ELSE
-                //PRINT_FORMATTED "Wall Front! (2)" 1000
-                GOTO endWallLeft
-            ENDIF            
-        ENDIF
-        CLEO_CALL getDataJoystick 0 (LRStick UDStick)
-        WAIT 0
-    ENDWHILE
+                IF CLEO_CALL isClearInSight 0 player_actor (0.0 2.0 0.0) (1 0 0 0 0)    //Front
+                    IF NOT IS_CHAR_PLAYING_ANIM player_actor "run_wall_L_B"
+                        CLEO_CALL setZangleCharWall 0 player_actor (-10.0 0.2 0.0) (-10.0 -0.2 0.0) 0.0
+                        CLEO_CALL setCoordsInter 0 player_actor (-5.0 0.0 0.0) 0.40
+                        CLEAR_CHAR_TASKS player_actor
+                        TASK_PLAY_ANIM_NON_INTERRUPTABLE player_actor "run_wall_L_B" "spider" 30.0 (1 1 1 0) -2
+                        WAIT 0
+                        SET_CHAR_ANIM_SPEED player_actor "run_wall_L_B" 1.15
+                    ELSE
+                        CLEO_CALL addForceToChar 0 player_actor (0.0 fVelY 0.15) fAmplitude
+                        IF IS_BUTTON_PRESSED PAD1 SQUARE  // ~k~~PED_JUMPING~
+                            GOTO endWallLeft
+                        ENDIF
+                    ENDIF
+                ELSE
+                    //PRINT_FORMATTED "Wall Front! (2)" 1000
+                    GOTO endWallLeft
+                ENDIF            
+            ENDIF
+            CLEO_CALL getDataJoystick 0 (LRStick UDStick)
+            WAIT 0
+        ENDWHILE
+    ELSE
+        // Controller
+        WHILE IS_BUTTON_PRESSED PAD1 CROSS   // ~k~~PED_SPRINT~
+            IF CLEO_CALL isClearInSight 0 player_actor (-2.0 0.25 0.0) (1 0 0 0 0)    //Left
+                GOTO animCornerLeft
+            ELSE
+                IF CLEO_CALL isClearInSight 0 player_actor (0.0 2.0 0.0) (1 0 0 0 0)    //Front
+                    IF NOT IS_CHAR_PLAYING_ANIM player_actor "run_wall_L_B"
+                        CLEO_CALL setZangleCharWall 0 player_actor (-10.0 0.2 0.0) (-10.0 -0.2 0.0) 0.0
+                        CLEO_CALL setCoordsInter 0 player_actor (-5.0 0.0 0.0) 0.40
+                        CLEAR_CHAR_TASKS player_actor
+                        TASK_PLAY_ANIM_NON_INTERRUPTABLE player_actor "run_wall_L_B" "spider" 30.0 (1 1 1 0) -2
+                        WAIT 0
+                        SET_CHAR_ANIM_SPEED player_actor "run_wall_L_B" 1.15
+                    ELSE
+                        CLEO_CALL addForceToChar 0 player_actor (0.0 fVelY 0.15) fAmplitude
+                        IF IS_BUTTON_PRESSED PAD1 SQUARE  // ~k~~PED_JUMPING~
+                            GOTO endWallLeft
+                        ENDIF
+                    ENDIF
+                ELSE
+                    //PRINT_FORMATTED "Wall Front! (2)" 1000
+                    GOTO endWallLeft
+                ENDIF            
+            ENDIF
+            CLEO_CALL getDataJoystick 0 (LRStick UDStick)
+            WAIT 0
+        ENDWHILE    
+    ENDIF
     GOTO endWallLeft
 
     animCornerLeft:

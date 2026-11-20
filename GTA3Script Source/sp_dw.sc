@@ -1321,6 +1321,9 @@ process_web_strike_air:
 
             ENDIF
         ENDIF
+    ELSE
+        CLEAR_CHAR_TASKS player_actor
+        CLEAR_CHAR_TASKS_IMMEDIATELY player_actor    
     ENDIF
 RETURN
 
