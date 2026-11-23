@@ -459,11 +459,10 @@ show_menu:
     GOSUB drawItems
     SWITCH iPanel
         CASE idOptions_l
-
             SWITCH iPanelB
                 DEFAULT //NULL  iPanel_null_settings
-                    CLEO_CALL getDataJoystickUpDown 0 (112 110 iActiveRow) (iActiveRow)
-                    IF IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
+                    CLEO_CALL getDataJoystickUpDown 0 (112 110 iActiveRow) (iActiveRow)                
+                    IF IS_BUTTON_JUST_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                         SWITCH iActiveRow
                             CASE 110    // activate Spiderman MOD
                                 CLEO_CALL getStatusSpiderMod 0 (iTempVar)
@@ -489,9 +488,11 @@ show_menu:
                                 SET_CLEO_SHARED_VAR varMusic iTempVar       // 0:OFF || 1:ON
                                 BREAK
                         ENDSWITCH
+
                         CLEO_CALL play_SFX_Menu 0 8  // ID:0-Sound Back || ID:4-Sound Move-UP || ID:8-Sound Move-Matrix || ID:12-Sound Success   
                         WHILE IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                             GOSUB drawItems
+                            BREAK
                         ENDWHILE
                     ENDIF
                     //Force Quit
@@ -503,7 +504,7 @@ show_menu:
 
                 CASE iPanel_hud_settings
                     CLEO_CALL getDataJoystickUpDown 0 (138 131 iActiveRow) (iActiveRow)
-                    IF IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
+                    IF IS_BUTTON_JUST_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                         SWITCH iActiveRow
                             CASE 131
                                GET_CLEO_SHARED_VAR varHudRadar iTempVar
@@ -588,13 +589,14 @@ show_menu:
                         CLEO_CALL play_SFX_Menu 0 8  // ID:0-Sound Back || ID:4-Sound Move-UP || ID:8-Sound Move-Matrix || ID:12-Sound Success   
                         WHILE IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                             GOSUB drawItems
+                            BREAK
                         ENDWHILE
                     ENDIF
                     BREAK
             ENDSWITCH
 
             IF IS_BUTTON_PRESSED PAD1 CIRCLE           // ~k~~PED_FIREWEAPON~  
-                WHILE   IS_BUTTON_PRESSED PAD1 CIRCLE           // ~k~~PED_FIREWEAPON~  
+                WHILE IS_BUTTON_PRESSED PAD1 CIRCLE           // ~k~~PED_FIREWEAPON~  
                     GOSUB drawItems
                 ENDWHILE
                 IF GOSUB is_any_hud_element_enabled
@@ -679,7 +681,7 @@ show_menu:
                     CLEO_CALL getDataJoystickUpDown 0 (3 1 iActive) (iActive)
                     CLEO_CALL getStatusSpiderMod 0 (iTempVar)
                     IF iTempVar = 1 // OFF                     
-                        IF IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
+                        IF IS_BUTTON_JUST_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                             SWITCH iActive
                                 CASE menSelSuit
                                     iPanelB = menSelSuit
@@ -699,6 +701,7 @@ show_menu:
                             CLEO_CALL play_SFX_Menu 0 0  // ID:0-Sound Back || ID:4-Sound Move-UP || ID:8-Sound Move-Matrix || ID:12-Sound Success   
                             WHILE IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                 GOSUB drawItems
+                                BREAK
                             ENDWHILE
                             iSetCamera = TRUE
                         ENDIF
@@ -713,13 +716,14 @@ show_menu:
                 CASE menSelSuit
                     CLEO_CALL getStatusSpiderMod 0 (iTempVar)
                     IF iTempVar = 1 // OFF                
-                        CLEO_CALL GetDataJoystickMatrix5x5 0 (5 1 iActiveCol)(7 0 iActiveRow) (iActiveCol iActiveRow)
-                        IF IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
+                        CLEO_CALL GetDataJoystickMatrix5x5 0 (5 1 iActiveCol) (7 0 iActiveRow) (iActiveCol iActiveRow)
+                        IF IS_BUTTON_JUST_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                             CLEO_CALL play_SFX_Menu 0 12  // ID:0-Sound Back || ID:4-Sound Move-UP || ID:8-Sound Move-Matrix || ID:12-Sound Success                        
                             GOSUB setSkin
                             GOSUB setWalkstyle
                             WHILE IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                 GOSUB drawItems
+                                BREAK
                             ENDWHILE
                             iSetCamera = TRUE
                         ENDIF        
@@ -727,7 +731,7 @@ show_menu:
                     BREAK
 
                 CASE menPowerSuit
-                    CLEO_CALL GetDataJoystickMatrix5x5 0 (5 1 iActiveCol)(4 1 iActiveRow) (iActiveCol iActiveRow)
+                    CLEO_CALL GetDataJoystickMatrix5x5 0 (5 1 iActiveCol) (4 1 iActiveRow) (iActiveCol iActiveRow)
                     IF iActiveRow = 4             
                         CLAMP_INT iActiveCol 1 1 (iActiveCol)   //Limit 4 power on 4rd row   
                     ENDIF
@@ -735,7 +739,7 @@ show_menu:
                     READ_INT_FROM_INI_FILE "CLEO\SpiderJ16D\config.ini" "CODE" "suit3" (iTempVar)
                     IF pUnlockCode = iTempVar
                     AND iSelectedPower = 1
-                        IF IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
+                        IF IS_BUTTON_JUST_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                             //IF NOT iSelectedPower = 10 //Iron Arms Power (Temporary locked, isn't ready)
                                 CLEO_CALL play_SFX_Menu 0 12  // ID:0-Sound Back || ID:4-Sound Move-UP || ID:8-Sound Move-Matrix || ID:12-Sound Success
                                 CLEO_CALL StorePowerSuitItem 0 iSelectedPower    //define power according to selection
@@ -743,6 +747,7 @@ show_menu:
                             //ENDIF
                             WHILE IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                 GOSUB drawItems
+                                BREAK
                             ENDWHILE
                             iSetCamera = TRUE
                         ENDIF  
@@ -751,7 +756,7 @@ show_menu:
                         READ_INT_FROM_INI_FILE "CLEO\SpiderJ16D\config.ini" "CODE" "suit5" (iTempVar)
                         IF pUnlockCode = iTempVar
                         AND iSelectedPower = 2
-                            IF IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
+                            IF IS_BUTTON_JUST_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                 //IF NOT iSelectedPower = 10 //Iron Arms Power (Temporary locked, isn't ready)
                                     CLEO_CALL play_SFX_Menu 0 12  // ID:0-Sound Back || ID:4-Sound Move-UP || ID:8-Sound Move-Matrix || ID:12-Sound Success
                                     CLEO_CALL StorePowerSuitItem 0 iSelectedPower    //define power according to selection
@@ -759,6 +764,7 @@ show_menu:
                                 //ENDIF
                                 WHILE IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                     GOSUB drawItems
+                                    BREAK
                                 ENDWHILE
                                 iSetCamera = TRUE
                             ENDIF 
@@ -767,7 +773,7 @@ show_menu:
                             READ_INT_FROM_INI_FILE "CLEO\SpiderJ16D\config.ini" "CODE" "suit6" (iTempVar)
                             IF pUnlockCode = iTempVar
                             AND iSelectedPower = 3
-                                IF IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
+                                IF IS_BUTTON_JUST_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                     //IF NOT iSelectedPower = 10 //Iron Arms Power (Temporary locked, isn't ready)
                                         CLEO_CALL play_SFX_Menu 0 12  // ID:0-Sound Back || ID:4-Sound Move-UP || ID:8-Sound Move-Matrix || ID:12-Sound Success
                                         CLEO_CALL StorePowerSuitItem 0 iSelectedPower    //define power according to selection
@@ -775,6 +781,7 @@ show_menu:
                                     //ENDIF
                                     WHILE IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                         GOSUB drawItems
+                                        BREAK
                                     ENDWHILE
                                     iSetCamera = TRUE
                                 ENDIF   
@@ -783,7 +790,7 @@ show_menu:
                                 READ_INT_FROM_INI_FILE "CLEO\SpiderJ16D\config.ini" "CODE" "suit8" (iTempVar)
                                 IF pUnlockCode = iTempVar
                                 AND iSelectedPower = 4
-                                    IF IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
+                                    IF IS_BUTTON_JUST_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                         //IF NOT iSelectedPower = 10 //Iron Arms Power (Temporary locked, isn't ready)
                                             CLEO_CALL play_SFX_Menu 0 12  // ID:0-Sound Back || ID:4-Sound Move-UP || ID:8-Sound Move-Matrix || ID:12-Sound Success
                                             CLEO_CALL StorePowerSuitItem 0 iSelectedPower    //define power according to selection
@@ -791,6 +798,7 @@ show_menu:
                                         //ENDIF
                                         WHILE IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                             GOSUB drawItems
+                                            BREAK
                                         ENDWHILE
                                         iSetCamera = TRUE
                                     ENDIF                     
@@ -799,7 +807,7 @@ show_menu:
                                     READ_INT_FROM_INI_FILE "CLEO\SpiderJ16D\config.ini" "CODE" "suit9" (iTempVar)
                                     IF pUnlockCode = iTempVar
                                     AND iSelectedPower = 5
-                                        IF IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
+                                        IF IS_BUTTON_JUST_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                             //IF NOT iSelectedPower = 10 //Iron Arms Power (Temporary locked, isn't ready)
                                                 CLEO_CALL play_SFX_Menu 0 12  // ID:0-Sound Back || ID:4-Sound Move-UP || ID:8-Sound Move-Matrix || ID:12-Sound Success
                                                 CLEO_CALL StorePowerSuitItem 0 iSelectedPower    //define power according to selection
@@ -807,6 +815,7 @@ show_menu:
                                             //ENDIF
                                             WHILE IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                                 GOSUB drawItems
+                                                BREAK
                                             ENDWHILE
                                             iSetCamera = TRUE
                                         ENDIF                           
@@ -815,7 +824,7 @@ show_menu:
                                         READ_INT_FROM_INI_FILE "CLEO\SpiderJ16D\config.ini" "CODE" "suit10" (iTempVar)
                                         IF pUnlockCode = iTempVar
                                         AND iSelectedPower = 6
-                                            IF IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
+                                            IF IS_BUTTON_JUST_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                                 //IF NOT iSelectedPower = 10 //Iron Arms Power (Temporary locked, isn't ready)
                                                     CLEO_CALL play_SFX_Menu 0 12  // ID:0-Sound Back || ID:4-Sound Move-UP || ID:8-Sound Move-Matrix || ID:12-Sound Success
                                                     CLEO_CALL StorePowerSuitItem 0 iSelectedPower    //define power according to selection
@@ -823,6 +832,7 @@ show_menu:
                                                 //ENDIF
                                                 WHILE IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                                     GOSUB drawItems
+                                                    BREAK
                                                 ENDWHILE
                                                 iSetCamera = TRUE
                                             ENDIF 
@@ -831,7 +841,7 @@ show_menu:
                                             READ_INT_FROM_INI_FILE "CLEO\SpiderJ16D\config.ini" "CODE" "suit11" (iTempVar)
                                             IF pUnlockCode = iTempVar
                                             AND iSelectedPower = 7
-                                                IF IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
+                                                IF IS_BUTTON_JUST_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                                     //IF NOT iSelectedPower = 10 //Iron Arms Power (Temporary locked, isn't ready)
                                                         CLEO_CALL play_SFX_Menu 0 12  // ID:0-Sound Back || ID:4-Sound Move-UP || ID:8-Sound Move-Matrix || ID:12-Sound Success
                                                         CLEO_CALL StorePowerSuitItem 0 iSelectedPower    //define power according to selection
@@ -839,6 +849,7 @@ show_menu:
                                                     //ENDIF
                                                     WHILE IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                                         GOSUB drawItems
+                                                        BREAK
                                                     ENDWHILE
                                                     iSetCamera = TRUE
                                                 ENDIF 
@@ -847,7 +858,7 @@ show_menu:
                                                 READ_INT_FROM_INI_FILE "CLEO\SpiderJ16D\config.ini" "CODE" "suit13" (iTempVar)
                                                 IF pUnlockCode = iTempVar
                                                 AND iSelectedPower = 15
-                                                    IF IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
+                                                    IF IS_BUTTON_JUST_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                                         //IF NOT iSelectedPower = 10 //Iron Arms Power (Temporary locked, isn't ready)
                                                             CLEO_CALL play_SFX_Menu 0 12  // ID:0-Sound Back || ID:4-Sound Move-UP || ID:8-Sound Move-Matrix || ID:12-Sound Success
                                                             CLEO_CALL StorePowerSuitItem 0 iSelectedPower    //define power according to selection
@@ -855,6 +866,7 @@ show_menu:
                                                         //ENDIF
                                                         WHILE IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                                             GOSUB drawItems
+                                                            BREAK
                                                         ENDWHILE
                                                         iSetCamera = TRUE
                                                     ENDIF 
@@ -863,7 +875,7 @@ show_menu:
                                                     READ_INT_FROM_INI_FILE "CLEO\SpiderJ16D\config.ini" "CODE" "suit14" (iTempVar)
                                                     IF pUnlockCode = iTempVar
                                                     AND iSelectedPower = 8
-                                                        IF IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
+                                                        IF IS_BUTTON_JUST_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                                             //IF NOT iSelectedPower = 10 //Iron Arms Power (Temporary locked, isn't ready)
                                                                 CLEO_CALL play_SFX_Menu 0 12  // ID:0-Sound Back || ID:4-Sound Move-UP || ID:8-Sound Move-Matrix || ID:12-Sound Success
                                                                 CLEO_CALL StorePowerSuitItem 0 iSelectedPower    //define power according to selection
@@ -871,6 +883,7 @@ show_menu:
                                                             //ENDIF
                                                             WHILE IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                                                 GOSUB drawItems
+                                                                BREAK
                                                             ENDWHILE
                                                             iSetCamera = TRUE
                                                         ENDIF 
@@ -879,7 +892,7 @@ show_menu:
                                                         READ_INT_FROM_INI_FILE "CLEO\SpiderJ16D\config.ini" "CODE" "suit16" (iTempVar)
                                                         IF pUnlockCode = iTempVar
                                                         AND iSelectedPower = 9
-                                                            IF IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
+                                                            IF IS_BUTTON_JUST_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                                                 //IF NOT iSelectedPower = 10 //Iron Arms Power (Temporary locked, isn't ready)
                                                                     CLEO_CALL play_SFX_Menu 0 12  // ID:0-Sound Back || ID:4-Sound Move-UP || ID:8-Sound Move-Matrix || ID:12-Sound Success
                                                                     CLEO_CALL StorePowerSuitItem 0 iSelectedPower    //define power according to selection
@@ -887,6 +900,7 @@ show_menu:
                                                                 //ENDIF
                                                                 WHILE IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                                                     GOSUB drawItems
+                                                                    BREAK
                                                                 ENDWHILE
                                                                 iSetCamera = TRUE
                                                             ENDIF  
@@ -895,7 +909,7 @@ show_menu:
                                                             READ_INT_FROM_INI_FILE "CLEO\SpiderJ16D\config.ini" "CODE" "suit19" (iTempVar)
                                                             IF pUnlockCode = iTempVar
                                                             AND iSelectedPower = 11
-                                                                IF IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
+                                                                IF IS_BUTTON_JUST_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                                                     //IF NOT iSelectedPower = 10 //Iron Arms Power (Temporary locked, isn't ready)
                                                                         CLEO_CALL play_SFX_Menu 0 12  // ID:0-Sound Back || ID:4-Sound Move-UP || ID:8-Sound Move-Matrix || ID:12-Sound Success
                                                                         CLEO_CALL StorePowerSuitItem 0 iSelectedPower    //define power according to selection
@@ -903,6 +917,7 @@ show_menu:
                                                                     //ENDIF
                                                                     WHILE IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                                                         GOSUB drawItems
+                                                                        BREAK
                                                                     ENDWHILE
                                                                     iSetCamera = TRUE
                                                                 ENDIF  
@@ -911,7 +926,7 @@ show_menu:
                                                                 READ_INT_FROM_INI_FILE "CLEO\SpiderJ16D\config.ini" "CODE" "suit20" (iTempVar)
                                                                 IF pUnlockCode = iTempVar
                                                                 AND iSelectedPower = 12               
-                                                                    IF IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
+                                                                    IF IS_BUTTON_JUST_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                                                         //IF NOT iSelectedPower = 10 //Iron Arms Power (Temporary locked, isn't ready)
                                                                             CLEO_CALL play_SFX_Menu 0 12  // ID:0-Sound Back || ID:4-Sound Move-UP || ID:8-Sound Move-Matrix || ID:12-Sound Success
                                                                             CLEO_CALL StorePowerSuitItem 0 iSelectedPower    //define power according to selection
@@ -919,6 +934,7 @@ show_menu:
                                                                         //ENDIF
                                                                         WHILE IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                                                             GOSUB drawItems
+                                                                            BREAK
                                                                         ENDWHILE
                                                                         iSetCamera = TRUE
                                                                     ENDIF      
@@ -927,7 +943,7 @@ show_menu:
                                                                     READ_INT_FROM_INI_FILE "CLEO\SpiderJ16D\config.ini" "CODE" "suit22" (iTempVar)
                                                                     IF pUnlockCode = iTempVar
                                                                     AND iSelectedPower = 13                 
-                                                                        IF IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
+                                                                        IF IS_BUTTON_JUST_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                                                             //IF NOT iSelectedPower = 10 //Iron Arms Power (Temporary locked, isn't ready)
                                                                                 CLEO_CALL play_SFX_Menu 0 12  // ID:0-Sound Back || ID:4-Sound Move-UP || ID:8-Sound Move-Matrix || ID:12-Sound Success
                                                                                 CLEO_CALL StorePowerSuitItem 0 iSelectedPower    //define power according to selection
@@ -935,6 +951,7 @@ show_menu:
                                                                             //ENDIF
                                                                             WHILE IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                                                                 GOSUB drawItems
+                                                                                BREAK
                                                                             ENDWHILE
                                                                             iSetCamera = TRUE
                                                                         ENDIF
@@ -943,7 +960,7 @@ show_menu:
                                                                         READ_INT_FROM_INI_FILE "CLEO\SpiderJ16D\config.ini" "CODE" "suit24" (iTempVar)
                                                                         IF pUnlockCode = iTempVar
                                                                         AND iSelectedPower = 14                 
-                                                                            IF IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
+                                                                            IF IS_BUTTON_JUST_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                                                                 //IF NOT iSelectedPower = 10 //Iron Arms Power (Temporary locked, isn't ready)
                                                                                     CLEO_CALL play_SFX_Menu 0 12  // ID:0-Sound Back || ID:4-Sound Move-UP || ID:8-Sound Move-Matrix || ID:12-Sound Success
                                                                                     CLEO_CALL StorePowerSuitItem 0 iSelectedPower    //define power according to selection
@@ -951,6 +968,7 @@ show_menu:
                                                                                 //ENDIF
                                                                                 WHILE IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                                                                     GOSUB drawItems
+                                                                                    BREAK
                                                                                 ENDWHILE
                                                                                 iSetCamera = TRUE
                                                                             ENDIF  
@@ -960,7 +978,7 @@ show_menu:
                                                                             IF pUnlockCode = iTempVar
                                                                             AND iSelectedPower = 10                 
         
-                                                                                IF IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
+                                                                                IF IS_BUTTON_JUST_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                                                                     //IF NOT iSelectedPower = 10 //Iron Arms Power (Temporary locked, isn't ready)
                                                                                         CLEO_CALL play_SFX_Menu 0 12  // ID:0-Sound Back || ID:4-Sound Move-UP || ID:8-Sound Move-Matrix || ID:12-Sound Success
                                                                                         CLEO_CALL StorePowerSuitItem 0 iSelectedPower    //define power according to selection
@@ -968,6 +986,7 @@ show_menu:
                                                                                     //ENDIF
                                                                                     WHILE IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                                                                         GOSUB drawItems
+                                                                                        BREAK
                                                                                     ENDWHILE
                                                                                     iSetCamera = TRUE
                                                                                 ENDIF
@@ -977,7 +996,7 @@ show_menu:
                                                                                 IF pUnlockCode = iTempVar
                                                                                 AND iSelectedPower = 16                 
         
-                                                                                    IF IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
+                                                                                    IF IS_BUTTON_JUST_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                                                                         //IF NOT iSelectedPower = 10 //Iron Arms Power (Temporary locked, isn't ready)
                                                                                             CLEO_CALL play_SFX_Menu 0 12  // ID:0-Sound Back || ID:4-Sound Move-UP || ID:8-Sound Move-Matrix || ID:12-Sound Success
                                                                                             CLEO_CALL StorePowerSuitItem 0 iSelectedPower    //define power according to selection
@@ -985,6 +1004,7 @@ show_menu:
                                                                                         //ENDIF
                                                                                         WHILE IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                                                                                             GOSUB drawItems
+                                                                                            BREAK
                                                                                         ENDWHILE
                                                                                         iSetCamera = TRUE
                                                                                     ENDIF        
@@ -1008,7 +1028,7 @@ show_menu:
 
                 CASE menConfigSuit
                     CLEO_CALL getDataJoystickUpDown 0 (108 100 iActiveRow) (iActiveRow)
-                    IF IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
+                    IF IS_BUTTON_JUST_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                         SWITCH iActiveRow
                             CASE idAlternativeSwing_l   // 100
                                 GOSUB set_config_alternative_swing
@@ -1042,6 +1062,7 @@ show_menu:
 
                         WHILE IS_BUTTON_PRESSED PAD1 CROSS            // ~k~~PED_SPRINT~
                             GOSUB drawItems
+                            BREAK
                         ENDWHILE
                         iSetCamera = TRUE
                     ENDIF
@@ -2603,28 +2624,28 @@ ProcessGame_and_DrawItems_SUITS:
         IF iActiveRow = 7
             iActiveRow = 6
             iMinRowSuitQuantity = 6
-            iMaxRowQuantity = 10   //7th Row
+            iMaxRowQuantity = 10   //5th Row
         ENDIF    
     ENDIF   
     IF iMinRowSuitQuantity = 6
         IF iActiveRow = 7
             iActiveRow = 6
             iMinRowSuitQuantity = 11
-            iMaxRowQuantity = 15   //8th Row
+            iMaxRowQuantity = 15   //6th Row
         ENDIF
     ENDIF           
     IF iMinRowSuitQuantity = 11
         IF iActiveRow = 7
             iActiveRow = 6
             iMinRowSuitQuantity = 16
-            iMaxRowQuantity = 20   //9th Row
+            iMaxRowQuantity = 20   //7th Row
         ENDIF
     ENDIF   
     IF iMinRowSuitQuantity >= 16
         IF iActiveRow = 7
             iActiveRow = 6
             iMinRowSuitQuantity = 21
-            iMaxRowQuantity = 25   //10th Row 
+            iMaxRowQuantity = 25   //8th Row 
         ENDIF   
     ENDIF  
             
@@ -7494,6 +7515,15 @@ getDataJoystickUpDown:
             CLEO_CALL play_SFX_Menu 0 8  // ID:0-Sound Back || ID:4-Sound Move-UP || ID:8-Sound Move-Matrix || ID:12-Sound Success   
         ENDIF
     ENDIF
+    IF iActiveRow > maxValueRow
+    AND UDStick > 0  //Down
+        iActiveRow = minValueRow
+    ELSE
+        IF iActiveRow < minValueRow
+        AND 0 > UDStick  //Up
+            iActiveRow = maxValueRow
+        ENDIF
+    ENDIF    
     CLAMP_INT iActiveRow minValueRow maxValueRow (iActiveRow) 
 CLEO_RETURN 0 iActiveRow
 }

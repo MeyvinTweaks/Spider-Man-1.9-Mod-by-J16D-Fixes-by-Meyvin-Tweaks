@@ -70,6 +70,12 @@ IF DOES_FILE_EXIST "CLEO\SpiderJ16D\HUD\sp_comp.cs"
     STREAM_CUSTOM_SCRIPT "SpiderJ16D\HUD\sp_comp.cs"
 ENDIF
 
+CLEO_CALL getCurrentAspectRatio 0 (iTempVar)
+IF 4 >= iTempVar
+    //GOSUB resetGameHUD
+    CLEO_CALL setRadarPostion 0 40.0 104.0 94.0 76.0   //Left|Top|Width|Height  ||Default
+ENDIF
+
 start_check:
 GOSUB readVars
 IF toggleSpiderMod = 0
